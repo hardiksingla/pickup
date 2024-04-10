@@ -6,6 +6,13 @@ import dotenv from 'dotenv';
 import mongoose from "mongoose";
 import { authMiddleware } from "../middleware";
 dotenv.config();
+import { Request } from 'express';
+
+declare module 'express-serve-static-core' {
+  interface Request {
+    phoneNumber?: string;
+  }
+}
 
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY;
 
@@ -14,52 +21,32 @@ const router = Express.Router();
 
 const productSubmitZod = zod.object({
     orderId: zod.number(),
-    status: zod.enum(["completed", "skipped"])
+    status: zod.enum(["completed", "skipped"]),
+    bagId: zod.string()
 });
 
 
-router.get('/order', async (req, res) => {
-    const order : any= await Order.findOne({status : "pending"});
+router.post('/order',authMiddleware, async (req, res) => {
+    console.log(req.phoneNumber);
+    let order : any= await Order.findOne({status : req.phoneNumber , prepaid : req.body.isPrepaid});
+    if (!order){
+        order  = await Order.findOne({status : "pending" , prepaid : req.body.isPrepaid});
+    }
     if (!order){
         res.status(200).json({message : "No pending orders" , messageStatus: 0});
-
         return;
     }
-        //     const response =  await axios.get("https://${SHOPIFY_API_KEY}/admin/orders.json")
-    //     for (const orderData of response.data.orders) {
-    //         const paymentStatus = Array.isArray(orderData.payment_gateway_names) && orderData.payment_gateway_names.length > 0
-    //                             ? orderData.payment_gateway_names[0]
-    //                             : 'Unknown Payment Status';
-    //         const order = new Order({
-    //             orderNo: orderData.order_number,
-    //             status: "pending",
-    //             paymentStatus: paymentStatus
-    //         });
-    //         await order.save();
-    //         for (const lineItem of orderData.line_items) {
-    //             const productOrdered = new ProductOrdered({
-    //                 orderId: orderData.order_number,
-    //                 productId: lineItem.id,
-    //                 quantity: lineItem.quantity
-    //             });
-    //             await productOrdered.save();                   
-    //         }
-            
-            
-    //         console.log(order)
-    //         }
-    //     return res.status(200).json(order);
-    // }
-
-    // console.log(order);
-
     let products : any = [];
-
     const orderId = order.id;
     const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders/${orderId}.json`);
-    console.log(order)
+    console.log("30.id",order.id)
     for (const lineItem of orderDetails.data.order.line_items){
+        console.log("32.lineItem",lineItem)
         const productId = lineItem.product_id;
+        if (productId === null){
+            continue;
+        }
+        console.log(`line items --- https://${SHOPIFY_API_KEY}/admin/products/${productId}.json`)
         const product : any = await axios.get(`https://${SHOPIFY_API_KEY}/admin/products/${productId}.json`);
         // console.log(product.data.product);
         products.push({
@@ -75,15 +62,19 @@ router.get('/order', async (req, res) => {
         products : products,
         paymentStatus: order.paymentStatus
     }
-    // order.status = "allocated";
-    // await order.save();
+
+    console.log(req.phoneNumber);
+    order.status = req.phoneNumber;
+    await order.save();
 
 
     res.status(200).json(data);
 })
 
+
+// product db not required
 router.get("/updateProducts", async (req, res) => {
-    const response =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/products.json`)
+    const response =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/2024-01/products.json`)
     const prevProducts = await Product.find({});
     const prevProductsList = [];
     for (const product of prevProducts){ 
@@ -108,34 +99,51 @@ router.get("/updateProducts", async (req, res) => {
 });
 
 router.get("/updateOrders", async (req, res) => {
-    const response =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders.json`)
-    const prevOrders = await Order.find({});
-    console.log(prevOrders);
-    const prevOrdersList = [];
-    for (const order of prevOrders){ 
-        prevOrdersList.push(order.orderNo);
-    }
-    console.log(prevOrdersList);
-    for (const order of response.data.orders){
-        console.log(order.order_number);
-        if (!prevOrdersList.includes(order.order_number)){
-            const paymentStatus = Array.isArray(order.payment_gateway_names) && order.payment_gateway_names.length > 0
-                                ? order.payment_gateway_names[0]
-                                : 'Unknown Payment Status';
-            const newOrder = new Order({
-                id : order.id,
-                orderNo: order.order_number,
-                status: "pending",
-                paymentStatus: paymentStatus
-            });
-            await newOrder.save();
-            for (const lineItem of order.line_items){
-                const productOrdered = new ProductOrdered({
-                    orderId: order.order_number,
-                    productId: lineItem.product_id,
-                    quantity: lineItem.quantity
-                });
-                await productOrdered.save();
+    let moreOrders = true;
+    let nextid = 0;
+    while (moreOrders){
+        const prevOrders = await Order.find({});
+        let response : any;
+        // console.log(`https://${SHOPIFY_API_KEY}/admin/orders.json?limit=250&since_id=${highestOrdernumberid}`);
+        response =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders.json?limit=250&since_id=${nextid}`)
+        if (response.data.orders.length === 0){
+            moreOrders = false;
+        }else{
+            nextid = response.data.orders[response.data.orders.length-1].id;            
+            console.log(response.data.orders[response.data.orders.length-1].id);
+        }
+        
+        const prevOrdersList = [];
+        for (const order of prevOrders){ 
+            prevOrdersList.push(order.orderNo);
+        }
+        console.log(prevOrdersList);
+        for (const order of response.data.orders){
+            console.log(order.order_number);
+            if (!prevOrdersList.includes(order.order_number)){
+                const paymentStatus = Array.isArray(order.payment_gateway_names) && order.payment_gateway_names.length > 0
+                                    ? order.payment_gateway_names[0]
+                                    : 'Unknown Payment Status';
+                if (order.fulfillment_status != "fulfilled"){
+                    const newOrder = new Order({
+                        id : order.id,
+                        orderNo: order.order_number,
+                        status: "pending",
+                        paymentStatus: paymentStatus,
+                        prepaid: order.financial_status === "paid" ? true : false,
+                        createdAt : new Date()
+
+                    });
+                    await newOrder.save();
+                    for (const lineItem of order.line_items){
+                        const productOrdered = new ProductOrdered({
+                            orderId: order.order_number,
+                            productId: lineItem.product_id,
+                            quantity: lineItem.quantity
+                        });
+                        await productOrdered.save();
+                    }
+                }
             }
         }
     }
@@ -158,6 +166,7 @@ router.post('/submit', async (req, res) => {
         return
     }
     order.status = status === "completed" ? "completed" : "skipped";
+    order.bagId = req.body.bagId;
 
     await order.save();
 

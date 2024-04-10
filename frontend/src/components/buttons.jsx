@@ -1,5 +1,5 @@
 import { useRecoilValue,useRecoilState } from "recoil";
-import { itemNo,orderDetails } from "../store/atoms/barcode";
+import { bagId, itemNo,orderDetails,prepaidReq} from "../store/atoms/barcode";
 import axios from 'axios';
 import { API_URL } from "../config";
 
@@ -8,10 +8,13 @@ const Buttons = () => {
     const completedItems = useRecoilValue(itemNo).completed;
     const [orderDetailsData, setOrderDetailsData] = useRecoilState(orderDetails);
     const orderId = orderDetailsData.orderId;
+    const bagIdValue = useRecoilValue(bagId);
     
     const dataFetch = async () => {
         console.log('dataFetch');
-        const response = await axios.get(`${API_URL}/api/v1/order/order`);
+        const isprepaid = useRecoilValue(prepaidReq);
+        const token = localStorage.getItem("token");
+        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid : isprepaid },{headers: { Authorization: `Bearer ${token}` }});
         console.log(response.data);                
         if(response.data.messageStatus == 0){
             console.log("sfefsf:,",response.data.messageStatus)
@@ -48,7 +51,8 @@ const Buttons = () => {
             
             const respone = await axios.post(endpoint , {
                 orderId : orderId,
-                status : 'completed'
+                status : 'completed',
+                bagId : bagIdValue
             })
             console.log(respone);
             if (respone.data.status == 1){            

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Webcam from 'react-webcam';
 import { BrowserMultiFormatReader } from '@zxing/library';
-import { useRecoilState} from "recoil";
-import { barcodeValue } from "../store/atoms/barcode";
+import { useRecoilState } from "recoil";
+import { barcodeValue , scanningProduct , bagId } from "../store/atoms/barcode";
 
 const BarcodeScanner = () => {
   const webcamRef = useRef(null);
@@ -10,6 +10,8 @@ const BarcodeScanner = () => {
   const [devices, setDevices] = useState([]);
   const [videoDeviceId, setVideoDeviceId] = useState();
   const [showPopup, setShowPopup] = useState(false);
+  const [scanningProductValue , setscanningProduct] = useRecoilState(scanningProduct);
+  const setbagId = useRecoilState(bagId);
 
   const handleDevices = React.useCallback(
     mediaDevices =>
@@ -30,6 +32,10 @@ const BarcodeScanner = () => {
       const capture = webcamRef.current.getScreenshot();
       if (capture) {
         codeReader.decodeFromImage(undefined, capture).then((result) => {
+          // if (!scanningProductValue) {
+          //   setbagId(result.text);
+          //   setscanningProduct(true);
+          // }
           setBarcode(result.text);
         }).catch((err) => {
         });
@@ -52,7 +58,7 @@ const BarcodeScanner = () => {
       />
       <button onClick={() => setShowPopup(true)}>C</button>
     </div>
-      <p>Detected Barcode: {barcode}</p>
+      {/* <p>Detected Barcode: {barcode}</p> */}
       {showPopup && (
         <div style={{ position: 'absolute', top: '20%', left: '20%', padding: '20px', zIndex: 100 }}>
           <h2>Select Camera</h2>

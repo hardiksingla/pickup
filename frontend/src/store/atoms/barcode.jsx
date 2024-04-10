@@ -13,6 +13,16 @@ export const barcodeValueLength = selector({
     }
   });
 
+export const scanningProduct = atom({
+    key: 'scanningProduct',
+    default: false
+});
+
+export const bagId = atom({
+    key: 'bagId',
+    default : 0
+});
+
 export const orderDetails = atom({
     key: 'orderDetails',
     default: []
@@ -38,3 +48,8 @@ export const itemNo = selector({
     };
   }
 })
+
+export const prepaidReq = atom({
+  key: 'prepaidReq',
+  default: true
+});

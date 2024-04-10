@@ -15,6 +15,7 @@ const authMiddleware = (req : any , res : any, next :any) => {
     try {
         const decoded : any = jwt.verify(token, JWT_SECRET as string);
         req.phoneNumber = decoded.phoneNumber;
+        console.log("decoded",req.phoneNumber, decoded.phoneNumber,decoded);
         next();
     } catch (err) {
         return res.status(403).json({});

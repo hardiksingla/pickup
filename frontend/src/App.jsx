@@ -1,27 +1,23 @@
-import { useState } from 'react'
-import BarcodeScanner from './components/camera'
-import OrderDetails from './components/orderDetails'
-import ItemList from './components/itemList'
-import Buttons from './components/buttons'
-import TextBox from './components/textbox'
-import './App.css'
+import './App.css';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import {
-  RecoilRoot
-} from 'recoil';
+import { RecoilRoot } from 'recoil';
+import Home from './components/Home';
+import Select from './components/select'; // Ensure the file name's capitalization matches.
+import Login from './components/login';
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <RecoilRoot>
-        <BarcodeScanner/> 
-        <OrderDetails/>
-        <ItemList/>
-        <TextBox/>  
-        <Buttons/>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Select />} />
+          <Route path="/home" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
     </RecoilRoot>
-  )
+  );
 }
 
-export default App
+export default App;

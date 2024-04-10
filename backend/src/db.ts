@@ -3,12 +3,13 @@ import { number } from "zod";
 import dotenv from "dotenv";
 
 dotenv.config();
-const MONGODB_URI : any = process.env.MONGODB_URI;
+// const MONGODB_URI : any = process.env.MONGODB_URI;
 
 const connectDB = async () => {
   try {
     await mongoose.connect(
-      MONGODB_URI
+      "mongodb+srv://hardiksingla007:k6GxsfWvs6QaojIs@cluster0.otp7pa7.mongodb.net/pickup?retryWrites=true&w=majority&appName=Cluster0"
+      // "mongodb://localhost:27016/pickup"
     );
     console.log("MongoDB connection SUCCESS");
   } catch (error) {
@@ -50,6 +51,12 @@ const ordersSchema = new mongoose.Schema({
   },
   paymentStatus : {
     type : String
+  },
+  prepaid:{
+    type: Boolean
+  },
+  bagId: {
+    type: String,
   }
 });
 

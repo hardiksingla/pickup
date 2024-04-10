@@ -1,5 +1,5 @@
 import { useRecoilState , useRecoilValue } from "recoil";
-import { barcodeValue , orderDetails , barcodeValueLength } from '../store/atoms/barcode';
+import { barcodeValue , orderDetails , barcodeValueLength , scanningProduct , bagId } from '../store/atoms/barcode';
 import { useEffect , useState } from "react";
 
 
@@ -8,16 +8,24 @@ const TextBox = () => {
     const [orderDetail, setOrderDetailsData] = useRecoilState(orderDetails);
     const barcodevalueLength = useRecoilValue(barcodeValueLength);
     const [isRed, setIsRed] = useState(false);
+    const [scanningProducts, setScanningProduct] = useRecoilState(scanningProduct);
+    const [bagIdValue, setBagIdValue] = useRecoilState(bagId);
 
     const handleChange = (e) => {
         setBarcode(e.target.value);
     };
-    useEffect(() => {
-        if (barcode.length === 10) {
-            console.log("Barcode length is 10:", barcode , barcodevalueLength);
-            console.log(orderDetail)
-            const productIndex = orderDetail.products.findIndex(product => product.sku == barcode);
-            console.log(productIndex);
+    useEffect(() => {    
+            // console.log("Barcode length is 10:", barcode , barcodevalueLength);
+            // console.log(orderDetail)
+            if (scanningProducts) {
+            let productIndex = -1;
+            if (orderDetail.products) {
+                console.log("orderDetail.products", orderDetail.products);
+                productIndex = orderDetail.products.findIndex(product => product.sku == barcode);
+            }
+            
+            console.log("prod index" , productIndex);
+            // if productIndex == 
             if (productIndex !== -1) {
                 if (orderDetail.products[productIndex].completionStatus === orderDetail.products[productIndex].quantity) {
                     setIsRed(true);
@@ -45,16 +53,28 @@ const TextBox = () => {
                     setIsRed(false);
                 }, 1000);
                 console.log(`Product with SKU ${barcode} not found.`);
-            }
+        
 
             // Log the updated order
             console.log(orderDetail);
+            }
 
         }
     }, [barcode]);
+
+    function submitBagId() {
+        console.log("BagId submitted");
+        setScanningProduct(true);
+        setBagIdValue(barcode);
+        setBarcode("");
+    }
+
     return (
         <div className={`my-5`}>
             <input type="text" onChange={handleChange} value={barcode} style={{ color: isRed ? 'red' : 'white' }} />
+            {
+            !scanningProducts &&
+            <button onClick={submitBagId} className="ml-2">Submit BagId</button>}
         </div>
     );
 }
