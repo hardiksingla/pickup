@@ -1,5 +1,5 @@
 import { useRecoilValue,useRecoilState } from "recoil";
-import { bagId, itemNo,orderDetails,prepaidReq} from "../store/atoms/barcode";
+import { bagId, itemNo,orderDetails,prepaidReq, from,to , scanningProduct} from "../store/atoms/barcode";
 import axios from 'axios';
 import { API_URL } from "../config";
 
@@ -8,13 +8,23 @@ const Buttons = () => {
     const completedItems = useRecoilValue(itemNo).completed;
     const [orderDetailsData, setOrderDetailsData] = useRecoilState(orderDetails);
     const orderId = orderDetailsData.orderId;
-    const bagIdValue = useRecoilValue(bagId);
+    const [bagIdValue , setBagValue] = useRecoilState(bagId);
+    const isprepaid = useRecoilValue(prepaidReq);
+    const fromValue = useRecoilValue(from);
+    const toValue = useRecoilValue(to);
+    const [scanningProducts, setScanningProduct] = useRecoilState(scanningProduct);
     
+
+    const reset = () => {
+        setBagValue('');
+        setScanningProduct(false)
+    }
+
     const dataFetch = async () => {
         console.log('dataFetch');
-        const isprepaid = useRecoilValue(prepaidReq);
         const token = localStorage.getItem("token");
-        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid : isprepaid },{headers: { Authorization: `Bearer ${token}` }});
+        console.log(token);
+        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid : isprepaid , from : fromValue , to : toValue },{headers: { Authorization: `Bearer ${token}` }});
         console.log(response.data);                
         if(response.data.messageStatus == 0){
             console.log("sfefsf:,",response.data.messageStatus)
@@ -37,7 +47,7 @@ const Buttons = () => {
         }})
 
         if (respone.data.status == 1){
-            
+            reset()
             dataFetch()
         }
     };
@@ -56,6 +66,7 @@ const Buttons = () => {
             })
             console.log(respone);
             if (respone.data.status == 1){            
+                reset ()
                 dataFetch()
             }
         }

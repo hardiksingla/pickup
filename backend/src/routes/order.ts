@@ -21,16 +21,22 @@ const router = Express.Router();
 
 const productSubmitZod = zod.object({
     orderId: zod.number(),
-    status: zod.enum(["completed", "skipped"]),
-    bagId: zod.string()
+    status: zod.enum(["completed", "skipped"])
 });
 
 
 router.post('/order',authMiddleware, async (req, res) => {
-    console.log(req.phoneNumber);
-    let order : any= await Order.findOne({status : req.phoneNumber , prepaid : req.body.isPrepaid});
+    console.log(req.body.from , req.body.to , req.phoneNumber , req.body.isPrepaid);
+    let order: any = await Order.findOne({
+        status: req.phoneNumber,
+        prepaid: req.body.isPrepaid,
+        orderNo: {
+            $gte: req.body.from,
+            $lte: req.body.to
+        }
+    });
     if (!order){
-        order  = await Order.findOne({status : "pending" , prepaid : req.body.isPrepaid});
+        order  = await Order.findOne({status : "pending" , prepaid : req.body.isPrepaid , orderNo : { $gt: req.body.from, $lt: req.body.to } });
     }
     if (!order){
         res.status(200).json({message : "No pending orders" , messageStatus: 0});
@@ -39,16 +45,13 @@ router.post('/order',authMiddleware, async (req, res) => {
     let products : any = [];
     const orderId = order.id;
     const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders/${orderId}.json`);
-    console.log("30.id",order.id)
     for (const lineItem of orderDetails.data.order.line_items){
         console.log("32.lineItem",lineItem)
         const productId = lineItem.product_id;
         if (productId === null){
             continue;
         }
-        console.log(`line items --- https://${SHOPIFY_API_KEY}/admin/products/${productId}.json`)
         const product : any = await axios.get(`https://${SHOPIFY_API_KEY}/admin/products/${productId}.json`);
-        // console.log(product.data.product);
         products.push({
             name : product.data.product.title,
             sku : lineItem.sku,
@@ -63,7 +66,6 @@ router.post('/order',authMiddleware, async (req, res) => {
         paymentStatus: order.paymentStatus
     }
 
-    console.log(req.phoneNumber);
     order.status = req.phoneNumber;
     await order.save();
 
@@ -152,10 +154,11 @@ router.get("/updateOrders", async (req, res) => {
 
 
 router.post('/submit', async (req, res) => {
-    console.log(req.body);
+    console.log("submit" , req.body);
     const validationResult : any = productSubmitZod.safeParse(req.body);
-    console.log(validationResult);
+    console.log("vlaidation error " ,validationResult.error);
     if (!validationResult.success){
+        console.log("Invalid request submit ")
         res.status(400).json({ message: "Invalid request submit" });
         return
     }

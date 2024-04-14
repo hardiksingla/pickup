@@ -1,6 +1,6 @@
 import { useEffect,useState } from "react";
 import {useRecoilState , useRecoilValue} from "recoil";
-import {orderDetails , itemNo ,prepaidReq} from "../store/atoms/barcode";
+import {orderDetails , itemNo ,prepaidReq ,from,to} from "../store/atoms/barcode";
 import { API_URL } from "../config.js";
 import axios, { formToJSON } from "axios";
 
@@ -8,11 +8,14 @@ const OrderDetails = () => {
     const [orderDetailsData, setOrderDetailsData] = useRecoilState(orderDetails);
     const prodNo = useRecoilValue(itemNo)
     const isprepaid = useRecoilValue(prepaidReq);
+    const fromValue = useRecoilValue(from);
+    const toValue = useRecoilValue(to);
     useEffect(() => {
       const dataFetch = async () => {
         console.log(isprepaid);
         const token = localStorage.getItem("token");
-        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid : isprepaid },{headers: { Authorization: `Bearer ${token}` }});
+        console.log("from to " ,  fromValue , toValue);
+        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid : isprepaid , from : fromValue , to : toValue },{headers: { Authorization: `Bearer ${token}` }});
         console.log(response.data);                
         if(response.data.messageStatus == 0){
             setOrderDetailsData({orderId : "No Order",paymentStatus : "No Order",products : []})

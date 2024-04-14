@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Webcam from 'react-webcam';
 import { BrowserMultiFormatReader } from '@zxing/library';
 import { useRecoilState } from "recoil";
-import { barcodeValue , scanningProduct , bagId } from "../store/atoms/barcode";
+import { barcodeValue } from "../store/atoms/barcode";
 
 const BarcodeScanner = () => {
   const webcamRef = useRef(null);
@@ -10,8 +10,6 @@ const BarcodeScanner = () => {
   const [devices, setDevices] = useState([]);
   const [videoDeviceId, setVideoDeviceId] = useState();
   const [showPopup, setShowPopup] = useState(false);
-  const [scanningProductValue , setscanningProduct] = useRecoilState(scanningProduct);
-  const setbagId = useRecoilState(bagId);
 
   const handleDevices = React.useCallback(
     mediaDevices =>

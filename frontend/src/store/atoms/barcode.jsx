@@ -53,3 +53,13 @@ export const prepaidReq = atom({
   key: 'prepaidReq',
   default: true
 });
+
+export const from = atom({
+  key: 'from',
+  default: ''
+});
+
+export const to = atom({
+  key: 'to',
+  default: ''
+});
