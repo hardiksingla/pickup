@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import BarcodeScanner from './camera'
 import OrderDetails from './orderDetails'
 import ItemList from './itemList'
@@ -7,11 +7,10 @@ import TextBox from './textbox'
 import BagId from './bagId'
 import '../App.css'
 
-import {
-  RecoilRoot
-} from 'recoil';
+
 
 function Home() {
+
 
   return (
     <>

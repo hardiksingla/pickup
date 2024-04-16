@@ -1,38 +1,67 @@
-import { useEffect,useState } from "react";
-import {useRecoilState , useRecoilValue} from "recoil";
-import {orderDetails , itemNo ,prepaidReq ,from,to} from "../store/atoms/barcode";
+import { useEffect, useState } from "react";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+  orderDetails,
+  itemNo,
+  prepaidReq,
+  from,
+  to,
+} from "../store/atoms/barcode";
 import { API_URL } from "../config.js";
-import axios, { formToJSON } from "axios";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const OrderDetails = () => {
-    const [orderDetailsData, setOrderDetailsData] = useRecoilState(orderDetails);
-    const prodNo = useRecoilValue(itemNo)
-    const isprepaid = useRecoilValue(prepaidReq);
-    const fromValue = useRecoilValue(from);
-    const toValue = useRecoilValue(to);
-    useEffect(() => {
-      const dataFetch = async () => {
-        console.log(isprepaid);
-        const token = localStorage.getItem("token");
-        console.log("from to " ,  fromValue , toValue);
-        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid : isprepaid , from : fromValue , to : toValue },{headers: { Authorization: `Bearer ${token}` }});
-        console.log(response.data);                
-        if(response.data.messageStatus == 0){
-            setOrderDetailsData({orderId : "No Order",paymentStatus : "No Order",products : []})
-          }else{
-                for (const product of response.data.products){
-                    product.completionStatus = 0;
-                }
-                setOrderDetailsData(response.data);
-          }
+  const [orderDetailsData, setOrderDetailsData] = useRecoilState(orderDetails);
+  const prodNo = useRecoilValue(itemNo);
+  const isprepaid = useRecoilValue(prepaidReq);
+  const [fromValue, setFrom] = useRecoilState(from);
+  const [toValue, setTo] = useRecoilState(to);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return; // Prevent further execution
     }
-    dataFetch()
-  }, []);
+
+    const dataFetch = async () => {
+      try {
+        const response = await axios.post(
+          `${API_URL}/api/v1/order/order`,
+          { isPrepaid: isprepaid, from: fromValue || 0, to: toValue || 99999999 },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        if (response.data.messageStatus === 0) {
+          setOrderDetailsData({
+            orderId: "No Order",
+            paymentStatus: "No Order",
+            products: [],
+          });
+        } else {
+          response.data.products.forEach(product => {
+            product.completionStatus = 0;
+          });
+          setOrderDetailsData(response.data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch order details', error);
+        // Handle error appropriately
+      }
+    };
+
+    dataFetch();
+  }, [isprepaid, fromValue, toValue, navigate]); // Ensure effect runs on dependency changes
+
   return (
     <div className="flex justify-around my-2">
       <p>{orderDetailsData.orderId}</p>
       <p>{orderDetailsData.paymentStatus}</p>
-      <p>{prodNo.completed}/{prodNo.total}</p>
+      <p>
+        {prodNo.completed}/{prodNo.total}
+      </p>
     </div>
   );
 };

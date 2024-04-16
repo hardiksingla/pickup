@@ -24,7 +24,7 @@ const Buttons = () => {
         console.log('dataFetch');
         const token = localStorage.getItem("token");
         console.log(token);
-        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid : isprepaid , from : fromValue , to : toValue },{headers: { Authorization: `Bearer ${token}` }});
+        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid: isprepaid, from: fromValue || 0, to: toValue || 99999999 },{headers: { Authorization: `Bearer ${token}` }});
         console.log(response.data);                
         if(response.data.messageStatus == 0){
             console.log("sfefsf:,",response.data.messageStatus)
