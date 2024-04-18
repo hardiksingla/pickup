@@ -22,6 +22,13 @@ export const bagId = atom({
     key: 'bagId',
     default : 0
 });
+// export const bagIdLength = selector({
+//     key: 'bagIdLength',
+//     get: ({get}) => {
+//       const barcode = get(bagId);
+//       return barcode.length;
+//     }
+//   });
 
 export const bagIdReq = atom({
     key: 'bagIdReq',

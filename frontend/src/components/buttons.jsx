@@ -113,9 +113,9 @@ const Buttons = () => {
         {isSkipOpen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                    <h2 className="text-2xl font-bold mb-4">Choose an Option</h2>
+                    <h2 className="text-2xl font-bold mb-4 text-white2">Choose an Option</h2>
                     <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-                    <label className="block mb-2">
+                    <label className="block mb- text-white2">
                         <input
                         type="radio"
                         value="1"
@@ -125,7 +125,7 @@ const Buttons = () => {
                         />
                         Option 1
                     </label>
-                    <label className="block mb-2">
+                    <label className="block mb-2 text-white2">
                         <input
                         type="radio"
                         value="2"
@@ -135,7 +135,7 @@ const Buttons = () => {
                         />
                         Option 2
                     </label>
-                    <label className="block mb-2">
+                    <label className="block mb-2 text-white2">
                         <input
                         type="radio"
                         value="3"
@@ -147,13 +147,13 @@ const Buttons = () => {
                     </label>
                     <button
                         type="submit"
-                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none"
+                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none text-white2"
                     >
                         Submit
                     </button>
                     <button
                         type="button"
-                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none"
+                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none text-white2"
                         onClick={() => setIsSkipOpen(false)}
                     >
                         Cancel
@@ -166,8 +166,8 @@ const Buttons = () => {
         {isOpen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                    <h2 className="text-2xl font-bold mb-2">Popup Title</h2>
-                    <p className="text-gray-700 mb-4">This is the content of the popup.</p>
+                    <h2 className="text-2xl font-bold mb-2 text-white2">Can Not Submit</h2>
+                    <p className="text-gray-700 mb-4 text-white2">All the Items Have Not Been Picked Yet</p>
                     <button 
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none"
                     onClick={togglePopup}

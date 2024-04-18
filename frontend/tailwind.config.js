@@ -7,7 +7,8 @@ export default {
   theme: {
     colors : {
       "bggr" : "#43ff6466",
-      "black" : "#000000"
+      "black" : "#000000",
+      "white2" : "#ffffff",
     },
     extend: {},
   },

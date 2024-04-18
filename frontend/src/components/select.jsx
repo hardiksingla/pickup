@@ -1,5 +1,5 @@
 import { useRecoilState, useSetRecoilState } from "recoil";
-import { prepaidReq, from, to } from "../store/atoms/barcode";
+import { prepaidReq, from, to ,bagIdReq } from "../store/atoms/barcode";
 import { useNavigate } from 'react-router-dom';
 
 function Select() {
@@ -7,6 +7,10 @@ function Select() {
     const navigate = useNavigate();
     const [fromValue, setFrom] = useRecoilState(from);
     const [toValue, setTo] = useRecoilState(to);
+    const [isChecked, setIsChecked] = useRecoilState(bagIdReq);
+    const handleCheckboxChange = () => {
+        setIsChecked(!isChecked);
+    };
 
     // Function to validate and update the 'from' and 'to' values before proceeding
     const validateAndNavigate = (isPrepaidOption) => {
@@ -43,15 +47,50 @@ function Select() {
 
 
     return (
-        <div className="flex flex-col h-[60vh] justify-around">
-            <div>
-                <input placeholder="from" onChange={(e) => setFrom(e.target.value)} className="m-3 p-1" value={fromValue} />
-                <input placeholder="to" onChange={(e) => setTo(e.target.value)} className="m-3 p-1" value={toValue}/>
+        <div>
+            <div className="flex items-center space-x-2 w-[100vw] justify-center mt-20">
+            <label htmlFor="simpleCheckbox" className="text-gray-700 select-none">
+                Bag Id required?
+            </label>
+            <input
+                type="checkbox"
+                id="simpleCheckbox"
+                checked={isChecked}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
+            />
+
             </div>
+        <div className="flex flex-col h-[60vh] justify-around">
+        <div className="flex flex-col p-4 space-y-4">
+            <label htmlFor="fromInput" className="block text-sm font-medium text-gray-700">
+                From
+                <input
+                    id="fromInput"
+                    type="text"
+                    placeholder="from"
+                    onChange={(e) => setFrom(e.target.value)}
+                    value={fromValue}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+            </label>
+            <label htmlFor="toInput" className="block text-sm font-medium text-gray-700">
+                To
+                <input
+                    id="toInput"
+                    type="text"
+                    placeholder="to"
+                    onChange={(e) => setTo(e.target.value)}
+                    value={toValue}
+                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+            </label>
+        </div>
             <div>
                 <button onClick={handlePrepaidSelection} className="m-3">Prepaid</button> 
                 <button onClick={handlePostPaidSelection} className="m-3">Cash On delivery</button>
             </div>
+        </div>
         </div>
     );
 }

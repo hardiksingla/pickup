@@ -6,7 +6,7 @@ import { useEffect , useState } from "react";
 const TextBox = () => {
     const [barcode, setBarcode] = useRecoilState(barcodeValue);
     const [orderDetail, setOrderDetailsData] = useRecoilState(orderDetails);
-    const barcodevalueLength = useRecoilValue(barcodeValueLength);
+    const barcodevalueLengthVal = useRecoilValue(barcodeValueLength);
     const [isRed, setIsRed] = useState(false);
     const [scanningProducts, setScanningProduct] = useRecoilState(scanningProduct);
     const [bagIdValue, setBagIdValue] = useRecoilState(bagId);
@@ -17,6 +17,12 @@ const TextBox = () => {
     useEffect(() => {    
             // console.log("Barcode length is 10:", barcode , barcodevalueLength);
             // console.log(orderDetail)
+            if (barcodevalueLengthVal == 9 && !scanningProducts) {
+                console.log("Barcode length is not 9")
+                setBagIdValue(barcode);
+                setBarcode("");
+                setScanningProduct(true);
+            }
             if (scanningProducts) {
             let productIndex = -1;
             if (orderDetail.products) {
@@ -72,9 +78,7 @@ const TextBox = () => {
     return (
         <div className={`my-5`}>
             <input type="text" onChange={handleChange} value={barcode} style={{ color: isRed ? 'red' : 'white' }} />
-            {
-            !scanningProducts &&
-            <button onClick={submitBagId} className="ml-2">Submit BagId</button>}
+            {/* {!scanningProducts && <button onClick={submitBagId} className="ml-2">Submit BagId</button>} */}
         </div>
     );
 }
