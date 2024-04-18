@@ -168,8 +168,9 @@ router.post('/submit', async (req, res) => {
         res.status(400).json({ message: "Invalid order" });
         return
     }
-    order.status = status === "completed" ? "completed" : "skipped";
+    order.status = status === "completed" ? "completed" : req.body.comment;
     order.bagId = req.body.bagId;
+    order.skipReason = req.body.comment;
 
     await order.save();
 

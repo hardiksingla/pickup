@@ -23,6 +23,11 @@ export const bagId = atom({
     default : 0
 });
 
+export const bagIdReq = atom({
+    key: 'bagIdReq',
+    default: true
+});
+
 export const orderDetails = atom({
     key: 'orderDetails',
     default: []

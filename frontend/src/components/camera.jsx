@@ -47,7 +47,7 @@ const BarcodeScanner = () => {
     <div>
     <div className='flex w-full justify-between'>
       <Webcam
-        className='max-h-24 object-cover w-10/12'
+        className='max-h-40 object-cover w-10/12'
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
@@ -58,7 +58,7 @@ const BarcodeScanner = () => {
     </div>
       {/* <p>Detected Barcode: {barcode}</p> */}
       {showPopup && (
-        <div style={{ position: 'absolute', top: '20%', left: '20%', padding: '20px', zIndex: 100 }}>
+        <div style={{ position: 'absolute', padding: '20px', zIndex: 100 }} className='bg-black w-[100vw]'>
           <h2>Select Camera</h2>
           {devices.map((device, key) => (
             <div key={device.deviceId}>

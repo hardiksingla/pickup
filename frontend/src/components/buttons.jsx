@@ -1,7 +1,8 @@
 import { useRecoilValue,useRecoilState } from "recoil";
-import { bagId, itemNo,orderDetails,prepaidReq, from,to , scanningProduct} from "../store/atoms/barcode";
+import { bagId, itemNo,orderDetails,prepaidReq, from,to , scanningProduct , bagIdReq} from "../store/atoms/barcode";
 import axios from 'axios';
 import { API_URL } from "../config";
+import { useEffect, useState } from "react";
 
 const Buttons = () => {
     const totalItems = useRecoilValue(itemNo).total;
@@ -13,12 +14,27 @@ const Buttons = () => {
     const fromValue = useRecoilValue(from);
     const toValue = useRecoilValue(to);
     const [scanningProducts, setScanningProduct] = useRecoilState(scanningProduct);
-    
+    const [isOpen, setIsOpen] = useState(false);
+    const [isSkipOpen, setIsSkipOpen] = useState(false);
+    const [selectedAnswer, setSelectedAnswer] = useState('');
+    const [bagIdReqValue , setBagIdReqValue] = useRecoilState(bagIdReq);
 
     const reset = () => {
-        setBagValue('');
-        setScanningProduct(false)
+        if(bagIdReqValue){
+            setBagValue('');
+            setScanningProduct(false)
+        }
+        
     }
+
+    useEffect(() => {   
+       if (!bagIdReqValue){
+        console.log('reset');
+        setScanningProduct(true)
+       }else{
+        setScanningProduct(false)
+       }
+    }, [bagIdReqValue]);
 
     const dataFetch = async () => {
         console.log('dataFetch');
@@ -39,17 +55,7 @@ const Buttons = () => {
 
     const skip = async (e) => {
         e.preventDefault();
-        console.log(API_URL);
-        console.log(orderId);
-        const respone = await axios({method : 'post', url : "http://localhost:3000/api/v1/order/submit",data: {
-            orderId : orderId,
-            status : 'skipped'
-        }})
-
-        if (respone.data.status == 1){
-            reset()
-            dataFetch()
-        }
+        setIsSkipOpen(true);
     };
 
     const submit = async (e) => {
@@ -69,14 +75,113 @@ const Buttons = () => {
                 reset ()
                 dataFetch()
             }
+        }else{
+            // alert('Please complete all items')
+            setIsOpen(true)
         }
     };
+    const togglePopup = () => {
+        setIsOpen(!isOpen);
+      };
+    // const toggleSkipPopup = () => {
+    //     setIsSkipOpen(!isOpen);
+    // };
+
+    const handleSubmit = async () => {
+        alert(`You selected: ${selectedAnswer}`);
+        setIsSkipOpen(false);
+        console.log(API_URL);
+        console.log(orderId);
+        const respone = await axios({method : 'post', url : "http://localhost:3000/api/v1/order/submit",data: {
+            orderId : orderId,
+            status : 'skipped',
+            comment : selectedAnswer
+        }})
+
+        if (respone.data.status == 1){
+            reset()
+            dataFetch()
+        }
+    };
+    const handleAnswerChange = (event) => {
+        setSelectedAnswer(event.target.value);
+      };
 
     return (
+        <>
+
+        {isSkipOpen && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                    <h2 className="text-2xl font-bold mb-4">Choose an Option</h2>
+                    <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                    <label className="block mb-2">
+                        <input
+                        type="radio"
+                        value="1"
+                        checked={selectedAnswer === '1'}
+                        onChange={handleAnswerChange}
+                        className="mr-2"
+                        />
+                        Option 1
+                    </label>
+                    <label className="block mb-2">
+                        <input
+                        type="radio"
+                        value="2"
+                        checked={selectedAnswer === '2'}
+                        onChange={handleAnswerChange}
+                        className="mr-2"
+                        />
+                        Option 2
+                    </label>
+                    <label className="block mb-2">
+                        <input
+                        type="radio"
+                        value="3"
+                        checked={selectedAnswer === '3'}
+                        onChange={handleAnswerChange}
+                        className="mr-2"
+                        />
+                        Option 3
+                    </label>
+                    <button
+                        type="submit"
+                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none"
+                    >
+                        Submit
+                    </button>
+                    <button
+                        type="button"
+                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none"
+                        onClick={() => setIsSkipOpen(false)}
+                    >
+                        Cancel
+                    </button>
+                    </form>
+                </div>
+                </div>
+            )}
+
+        {isOpen && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                    <h2 className="text-2xl font-bold mb-2">Popup Title</h2>
+                    <p className="text-gray-700 mb-4">This is the content of the popup.</p>
+                    <button 
+                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none"
+                    onClick={togglePopup}
+                    >
+                    Close
+                    </button>
+                </div>
+                </div>
+            )}
         <div className="flex justify-around my-5">
             <button onClick={skip}>Skip</button>
             <button onClick={submit}>Submit</button>
         </div>
+        </>
     );
 };
 

@@ -57,7 +57,11 @@ const ordersSchema = new mongoose.Schema({
   },
   bagId: {
     type: String,
-  }
+  },
+  // skipReason:{
+  //   type: String
+  // }
+  
 });
 
 const productShema = new mongoose.Schema({
