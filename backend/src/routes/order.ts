@@ -101,8 +101,24 @@ router.get("/updateProducts", async (req, res) => {
 });
 
 router.get("/updateOrders", async (req, res) => {
+    console.log("updateOrders");
+    let deleteArr = [];
+    deleteArr.push("pending")
+    const users = await User.find({})
+    for (const user of users){
+        deleteArr.push(user.phoneNumber);
+    }
+    console.log(deleteArr)
+    try {
+        const result = await Order.deleteMany({ "status": { $in: deleteArr }});
+        console.log(result.deletedCount + ' pending orders were deleted.');
+    } catch (error) {
+        console.error('Error deleting pending orders:', error);
+    }
+
+    
     let moreOrders = true;
-    let nextid = 0;
+    let nextid = 5907417530651;
     while (moreOrders){
         const prevOrders = await Order.find({});
         let response : any;
@@ -113,6 +129,7 @@ router.get("/updateOrders", async (req, res) => {
         }else{
             nextid = response.data.orders[response.data.orders.length-1].id;            
             console.log(response.data.orders[response.data.orders.length-1].id);
+            console.log(nextid);
         }
         
         const prevOrdersList = [];

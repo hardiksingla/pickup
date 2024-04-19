@@ -1,6 +1,10 @@
 import { useRecoilState, useSetRecoilState } from "recoil";
 import { prepaidReq, from, to ,bagIdReq } from "../store/atoms/barcode";
 import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+import { API_URL } from "../config.js";
+import { useState } from "react";
+
 
 function Select() {
     const [isPrepaid, setPrepaid] = useRecoilState(prepaidReq);
@@ -8,6 +12,7 @@ function Select() {
     const [fromValue, setFrom] = useRecoilState(from);
     const [toValue, setTo] = useRecoilState(to);
     const [isChecked, setIsChecked] = useRecoilState(bagIdReq);
+    const [upadteLoading, setUpadteLoading] = useState(false)
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
     };
@@ -44,6 +49,12 @@ function Select() {
     const handlePostPaidSelection = () => {
         validateAndNavigate(false);
     };
+
+    const refreshOrders = async () => {
+        setUpadteLoading(true)
+        const response = await axios.get(`${API_URL}/api/v1/order/updateOrders`);
+        setUpadteLoading(false)
+    }
 
 
     return (
@@ -89,6 +100,16 @@ function Select() {
             <div>
                 <button onClick={handlePrepaidSelection} className="m-3">Prepaid</button> 
                 <button onClick={handlePostPaidSelection} className="m-3">Cash On delivery</button>
+            </div>
+            <div>
+                <button onClick={refreshOrders} className="m-3">refresh orders</button>
+                {upadteLoading && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                    <h2 className="text-2xl font-bold mb-2 text-white2">Refreshing</h2>
+                </div>
+                </div>
+                )}
             </div>
         </div>
         </div>
