@@ -52,7 +52,7 @@ function Select() {
 
     const refreshOrders = async () => {
         setUpadteLoading(true)
-        const response = await axios.get(`${API_URL}/api/v1/order/updateOrders`);
+        const response = await axios.post(`${API_URL}/api/v1/order/updateOrders`);
         setUpadteLoading(false)
     }
 

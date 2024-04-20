@@ -100,7 +100,7 @@ router.get("/updateProducts", async (req, res) => {
     
 });
 
-router.get("/updateOrders", async (req, res) => {
+router.post("/updateOrders", async (req, res) => {
     console.log("updateOrders");
     let deleteArr = [];
     deleteArr.push("pending")
