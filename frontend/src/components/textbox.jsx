@@ -77,7 +77,7 @@ const TextBox = () => {
 
     return (
         <div className={`my-5`}>
-            <input type="text" onChange={handleChange} value={barcode} style={{ color: isRed ? 'red' : 'white' }} />
+            <input type="text" onChange={handleChange} value={barcode} style={{ color: isRed ? 'red' : 'white' }}  className="border-4 border-black"/>
             {/* {!scanningProducts && <button onClick={submitBagId} className="ml-2">Submit BagId</button>} */}
         </div>
     );
