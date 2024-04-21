@@ -88,14 +88,15 @@ const Buttons = () => {
     // };
 
     const handleSubmit = async () => {
-        alert(`You selected: ${selectedAnswer}`);
+        // alert(`You selected: ${selectedAnswer}`);
         setIsSkipOpen(false);
         console.log(API_URL);
         console.log(orderId);
         const respone = await axios({method : 'post', url : `${API_URL}/api/v1/order/submit`,data: {
             orderId : orderId,
             status : 'skipped',
-            comment : selectedAnswer
+            comment : selectedAnswer,
+            bagId : bagIdValue
         }})
 
         if (respone.data.status == 1){
@@ -118,32 +119,32 @@ const Buttons = () => {
                     <label className="block mb- text-white2">
                         <input
                         type="radio"
-                        value="1"
-                        checked={selectedAnswer === '1'}
+                        value="Item missing"
+                        checked={selectedAnswer === 'Item missing'}
                         onChange={handleAnswerChange}
                         className="mr-2"
                         />
-                        Option 1
+                        Item missing
                     </label>
                     <label className="block mb-2 text-white2">
                         <input
                         type="radio"
-                        value="2"
-                        checked={selectedAnswer === '2'}
+                        value="Cancelled manually"
+                        checked={selectedAnswer === 'Cancelled manually'}
                         onChange={handleAnswerChange}
                         className="mr-2"
                         />
-                        Option 2
+                        Cancelled manually
                     </label>
                     <label className="block mb-2 text-white2">
                         <input
                         type="radio"
-                        value="3"
-                        checked={selectedAnswer === '3'}
+                        value="Already packed"
+                        checked={selectedAnswer === 'Already packed'}
                         onChange={handleAnswerChange}
                         className="mr-2"
                         />
-                        Option 3
+                        Already packed
                     </label>
                     <button
                         type="submit"

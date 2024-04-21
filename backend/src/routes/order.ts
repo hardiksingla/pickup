@@ -36,7 +36,7 @@ router.post('/order',authMiddleware, async (req, res) => {
         }
     });
     if (!order){
-        order  = await Order.findOne({status : "pending" , prepaid : req.body.isPrepaid , orderNo : { $gt: req.body.from, $lt: req.body.to } });
+        order  = await Order.findOne({status : "pending" , prepaid : req.body.isPrepaid , orderNo : { $gte: req.body.from, $lte: req.body.to } });
     }
     if (!order){
         res.status(200).json({message : "No pending orders" , messageStatus: 0});
@@ -75,30 +75,30 @@ router.post('/order',authMiddleware, async (req, res) => {
 
 
 // product db not required
-router.get("/updateProducts", async (req, res) => {
-    const response =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/2024-01/products.json`)
-    const prevProducts = await Product.find({});
-    const prevProductsList = [];
-    for (const product of prevProducts){ 
-        prevProductsList.push(product.id);
-    }
-    console.log(prevProductsList);
-    for (const product of response.data.products){
-        console.log(product.id);
-        if (!prevProductsList.includes(product.id.toString())){
-            const newProduct = new Product({
-                id: product.id,
-                name: product.title,
-                sku: product.variants[0].sku,
-                location: product.variants[0].inventory_item_id,
-                image: product.image !== null && product.image.src !== null ? product.image.src : "null"
-            });
-            await newProduct.save();
-        }
-    }
-    res.status(200).json({status : "success"});
+// router.get("/updateProducts", async (req, res) => {
+//     const response =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/2024-01/products.json`)
+//     const prevProducts = await Product.find({});
+//     const prevProductsList = [];
+//     for (const product of prevProducts){ 
+//         prevProductsList.push(product.id);
+//     }
+//     console.log(prevProductsList);
+//     for (const product of response.data.products){
+//         console.log(product.id);
+//         if (!prevProductsList.includes(product.id.toString())){
+//             const newProduct = new Product({
+//                 id: product.id,
+//                 name: product.title,
+//                 sku: product.variants[0].sku,
+//                 location: product.variants[0].inventory_item_id,
+//                 image: product.image !== null && product.image.src !== null ? product.image.src : "null"
+//             });
+//             await newProduct.save();
+//         }
+//     }
+//     res.status(200).json({status : "success"});
     
-});
+// });
 
 router.post("/updateOrders", async (req, res) => {
     console.log("updateOrders");

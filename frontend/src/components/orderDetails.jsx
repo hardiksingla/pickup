@@ -57,9 +57,9 @@ const OrderDetails = () => {
 
   return (
     <div className="flex justify-around my-2">
-      <p className="text-2xl">{orderDetailsData.orderId}</p>
-      <p className="text-2xl">{orderDetailsData.paymentStatus === "Cash on Delivery (COD)" ? "COD" : orderDetailsData.paymentStatus}</p>
-      <p className="text-2xl">
+      <p className="text-3xl">{orderDetailsData.orderId}</p>
+      <p className="text-l">{orderDetailsData.paymentStatus === "Cash on Delivery (COD)" ? "COD" : orderDetailsData.paymentStatus}</p>
+      <p className="text-xl">
         {prodNo.completed}/{prodNo.total}
       </p>
     </div>
