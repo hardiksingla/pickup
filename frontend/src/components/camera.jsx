@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Webcam from 'react-webcam';
-import { BrowserMultiFormatReader } from '@zxing/library';
+import Quagga from 'quagga'; // Import Quagga
 import { useRecoilState } from "recoil";
-import { barcodeValue , scanningProduct , bagId } from "../store/atoms/barcode";
-import TextBox from './textbox';
+import { barcodeValue, scanningProduct, bagId } from "../store/atoms/barcode";
 
 const BarcodeScanner = () => {
   const webcamRef = useRef(null);
@@ -11,63 +10,77 @@ const BarcodeScanner = () => {
   const [devices, setDevices] = useState([]);
   const [videoDeviceId, setVideoDeviceId] = useState();
   const [showPopup, setShowPopup] = useState(false);
+  const [webcamReady, setWebcamReady] = useState(false);
   const [scanningProductValue, setscanningProduct] = useRecoilState(scanningProduct);
   const [isOpen, setIsOpen] = useState(false);
   const [bagIdValue, setBagIdValue] = useRecoilState(bagId);
-  const [barcodetest, setBarcodeTest] = useState("");
-
   const handleDevices = React.useCallback(
-    mediaDevices =>
-      setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
+    mediaDevices => setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
     [setDevices]
   );
-  const togglePopup = () => {
-    setIsOpen(!isOpen);
-  };
 
   useEffect(() => {
     navigator.mediaDevices.enumerateDevices().then(handleDevices);
   }, [handleDevices]);
 
-  useEffect(() => {
-  }, [devices]);
+  const togglePopup = () => {
+    setIsOpen(!isOpen);
+  };
 
-  const barcodeRead = (result) => {
-    console.log(result);
-      if (result.length === 9){
-        setBarcode(result);
-        setBagIdValue(result);
-        setscanningProduct(true);
-        setBarcode("");
+  const handleDetected = (result) => {
+    if (result.codeResult) {
+      console.log(result.codeResult.code);
+      if (scanningProductValue){
+        setBarcode(result.codeResult.code);
+      }else{
+        if (result.length === 9){
+          setBarcode(result.codeResult.code);
+          setBagIdValue(result.codeResult.code);
+          setscanningProduct(true);
+          setBarcode("");
+        }
+        else{
+          setIsOpen(true);
+        } 
       }
-      else{
-        setIsOpen(true);
-      }      
-
+    }
   };
 
   useEffect(() => {
-    const codeReader = new BrowserMultiFormatReader();
-    const interval = setInterval(() => {
-      const capture = webcamRef.current.getScreenshot();
-      if (capture) {
-        codeReader.decodeFromImage(undefined, capture).then((result) => {
-          if (scanningProductValue){
-            setBarcode(result);
-          }else{
-            barcodeRead(result.text);
-          }
-        }).catch((err) => {
-        });
-      }
-    }, 1000);
+    if (videoDeviceId && webcamReady) {
+      Quagga.init({
+        inputStream: {
+          type: "LiveStream",
+          constraints: {
+            width: 640,
+            height: 480,
+            facingMode: "environment",
+            deviceId: videoDeviceId
+          },
+          target: webcamRef.current.video // Adjusted to use the video element directly
+        },
+        decoder: {
+          readers: ["code_128_reader"] // Specify barcode types
+        },
+      }, (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        Quagga.start();
+        Quagga.onDetected(handleDetected);
+      });
 
-    return () => clearInterval(interval);
-  }, [videoDeviceId , scanningProductValue]);
+      return () => {
+        Quagga.stop();
+        Quagga.offDetected(handleDetected);
+      };
+    }
+  }, [videoDeviceId, webcamReady]);
 
   return (
     <div>
-            {isOpen && (
+      {isOpen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
                     <h2 className="text-2xl font-bold mb-2 text-white2">Not A Bag Id</h2>
@@ -80,19 +93,19 @@ const BarcodeScanner = () => {
                     </button>
                 </div>
                 </div>
-            )}
-    <div className='flex w-full justify-between'>
-      <Webcam
-        className='max-h-40 object-cover w-10/12'
-        audio={false}
-        ref={webcamRef}
-        screenshotFormat="image/jpeg"
-        videoConstraints={{ deviceId: videoDeviceId ? { exact: videoDeviceId } : undefined }}
-        // style={{ width : '50%' }}
-      />
-      <button onClick={() => setShowPopup(true)}>C</button>
-    </div>
-      {/* <p>Detected Barcode: {barcode}</p> */}
+      )}
+      
+      <div className='flex w-full justify-between'>
+        <Webcam
+          className='max-h-40 object-cover w-[95%]'
+          audio={false}
+          ref={webcamRef}
+          onUserMedia={() => setWebcamReady(true)} // Set the webcam ready state when media is available
+          screenshotFormat="image/jpeg"
+          videoConstraints={{ deviceId: videoDeviceId ? { exact: videoDeviceId } : undefined }}
+        />
+        <button onClick={() => setShowPopup(true)} className='w-1/12'>Camera</button>
+      </div>
       {showPopup && (
         <div style={{ position: 'absolute', padding: '20px', zIndex: 100 }} className='bg-black w-[100vw]'>
           <h2>Select Camera</h2>
