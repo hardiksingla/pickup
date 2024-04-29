@@ -10,7 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const router = Express.Router();
 
 const loginZod = zod.object({
-    phoneNumber : zod.string().refine((value) => /^\d{10}$/.test(value)),
+    phoneNumber : zod.string(),
     password : zod.string()
 });
 
