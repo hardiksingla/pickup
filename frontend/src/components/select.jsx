@@ -17,6 +17,11 @@ function Select() {
         setIsChecked(!isChecked);
     };
 
+    const logout = () => {
+        localStorage.removeItem('token');
+        navigate('/login');
+    };
+    
     // Function to validate and update the 'from' and 'to' values before proceeding
     const validateAndNavigate = (isPrepaidOption) => {
         // Parse the values to ensure they are treated as numbers
@@ -59,8 +64,10 @@ function Select() {
 
     return (
         <div>
-            <div className="flex items-center space-x-2 w-[100vw] justify-center mt-20">
-            <label htmlFor="simpleCheckbox" className="text-gray-700 select-none">
+        <button onClick={logout} className="absolute top-3 right-3">Logout</button>
+            
+            <div className="flex items-center space-x-2 justify-center mt-20">
+            <label htmlFor="simpleCheckbox" className="text-gray-700 select-none ">
                 Bag Id required?
             </label>
             <input
