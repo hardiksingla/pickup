@@ -14,6 +14,7 @@ const BarcodeScanner = () => {
   const [scanningProductValue, setscanningProduct] = useRecoilState(scanningProduct);
   const [isOpen, setIsOpen] = useState(false);
   const [bagIdValue, setBagIdValue] = useRecoilState(bagId);
+  const [test, setTest] = useState("")
   const handleDevices = React.useCallback(
     mediaDevices => setDevices(mediaDevices.filter(({ kind }) => kind === "videoinput")),
     [setDevices]
@@ -28,12 +29,13 @@ const BarcodeScanner = () => {
   };
 
   const handleDetected = (result) => {
+    let bv = result.codeResult.code;
     if (result.codeResult) {
       console.log(result.codeResult.code);
       if (scanningProductValue){
         setBarcode(result.codeResult.code);
       }else{
-        if (result.length === 9){
+        if (bv.length === 9){
           setBarcode(result.codeResult.code);
           setBagIdValue(result.codeResult.code);
           setscanningProduct(true);
@@ -76,7 +78,7 @@ const BarcodeScanner = () => {
         Quagga.offDetected(handleDetected);
       };
     }
-  }, [videoDeviceId, webcamReady]);
+  }, [videoDeviceId, webcamReady ,scanningProductValue]);
 
   return (
     <div>
@@ -91,6 +93,7 @@ const BarcodeScanner = () => {
                     >
                     Close
                     </button>
+                    <p>{test}</p>
                 </div>
                 </div>
       )}
