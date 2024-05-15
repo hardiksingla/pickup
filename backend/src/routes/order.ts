@@ -57,8 +57,8 @@ router.post('/order',authMiddleware, async (req, res) => {
         
         products.push({
             name : product.data.product.title,
-            // sku : test,
-            sku : lineItem.sku,
+            sku : test,
+            // sku : lineItem.sku,
             quantity : lineItem.quantity,
             image : product.data.product.image !== null && product.data.product.image.src !== null ? product.data.product.image.src : "null",
             location: product.data.product.variants[0].inventory_item_id
