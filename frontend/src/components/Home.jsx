@@ -14,7 +14,7 @@ function Home() {
 
   return (
     <>
-        <BarcodeScanner/> 
+        {/* <BarcodeScanner/>  */}
         <BagId/>
         <OrderDetails/>
         <ItemList/>

@@ -45,20 +45,25 @@ router.post('/order',authMiddleware, async (req, res) => {
     let products : any = [];
     const orderId = order.id;
     const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders/${orderId}.json`);
+    
+    let test = 5722
     for (const lineItem of orderDetails.data.order.line_items){
-        console.log("32.lineItem",lineItem)
+        // console.log("32.lineItem",lineItem)
         const productId = lineItem.product_id;
         if (productId === null){
             continue;
         }
         const product : any = await axios.get(`https://${SHOPIFY_API_KEY}/admin/products/${productId}.json`);
+        
         products.push({
             name : product.data.product.title,
+            // sku : test,
             sku : lineItem.sku,
             quantity : lineItem.quantity,
             image : product.data.product.image !== null && product.data.product.image.src !== null ? product.data.product.image.src : "null",
             location: product.data.product.variants[0].inventory_item_id
         });
+        test++;
     }
     const data = {
         orderId : order.orderNo,

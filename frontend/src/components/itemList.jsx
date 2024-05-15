@@ -28,7 +28,7 @@ const ItemList = () => {
     }
 
     return (
-        <div className="h-72 overflow-auto">
+        <div className="h-96 overflow-auto">
             {products}
         </div>
     );

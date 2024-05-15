@@ -9,11 +9,9 @@ const TextBox = () => {
     const [isRed, setIsRed] = useState(false);
     const [scanningProducts, setScanningProduct] = useRecoilState(scanningProduct);
     const [bagIdValue, setBagIdValue] = useRecoilState(bagId);
-    const [isOpen, setIsOpen] = useState(false);
+    const [isReadOnly, setIsReadOnly] = useState(true); // New state for readonly toggle
     const inputRef = useRef(null);
-    const [isEditable, setIsEditable] = useState(false);
-    const [isEditableUser, setIsEditableUser] = useState(false);
-    
+
     const handleChange = (e) => {
         setBarcode(e.target.value);
     };
@@ -30,16 +28,15 @@ const TextBox = () => {
                     setScanningProduct(true);
                     setBarcode("");
                 } else {
-                    setIsOpen(true);
+                    setIsRed(true);
+                    setTimeout(() => {
+                        setIsRed(false);
+                    }, 1000);
                     console.log("Not a Bag ID");
                 }
             }
         }
     };
-
-    const togglePopup = () => {
-        setIsOpen(!isOpen);
-      };
 
     const handleKeyDown = (event) => {
         if (event.key === 'Enter') {
@@ -48,28 +45,6 @@ const TextBox = () => {
             setBarcode(''); // Clear the input after processing
         }
     };
-
-    useEffect(() => {
-        const focusInput = (event) => {
-          if (inputRef.current) {
-            setIsEditable(true);
-            inputRef.current.focus();
-            if (!isEditableUser){
-                setTimeout(() => {
-                  setIsEditable(false);
-                }, 200);
-            }
-          }
-        };
-        document.addEventListener('keydown', focusInput);
-
-        // Focus the input field when the component mounts
-        focusInput();
-
-        return () => {
-            document.removeEventListener('keydown', focusInput);
-        };
-    }, [isEditableUser]);
 
     useEffect(() => {
         if (barcodevalueLengthVal == 9 && !scanningProducts) {
@@ -128,57 +103,48 @@ const TextBox = () => {
     }
 
     useEffect(() => {
-        if (inputRef.current) {
-            inputRef.current.focus();
-        }
+        const focusInput = (event) => {
+            if (inputRef.current) {
+              setIsReadOnly(true);
+              inputRef.current.focus();
+              setTimeout(() => {
+                setIsReadOnly(false);
+              }, 100); // Make the input read-only again after a short delay
+            }
+          };
+
+        document.addEventListener('keydown', focusInput);
+
+        // Focus the input field when the component mounts
+        focusInput();
+
+        return () => {
+            document.removeEventListener('keydown', focusInput);
+        };
     }, []);
 
-    const handleCheckboxChange = () => {
-        setIsEditableUser(!isEditableUser);
-        setIsEditable(!isEditable);
+    const toggleReadOnly = () => {
+        setIsReadOnly((prev) => !prev);
     };
 
     return (
-        <div className={"my-5"}>
+        <div className="my-5">
             <input
                 ref={inputRef}
                 type="text"
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 value={barcode}
-                readOnly={!isEditable}
-                style={{ color: isRed ? 'red' : 'white' }}
+                style={{ color: isRed ? 'red' : 'black' }}
                 className="border-4 border-black"
                 placeholder=""
+                readOnly={isReadOnly} // Controlled by isReadOnly state
             />
-            <div className="flex items-center space-x-2 justify-center">
-            <label htmlFor="simpleCheckbox" className="text-gray-700 select-none ">
-                edit
-            </label>
-            <input
-                type="checkbox"
-                id="simpleCheckbox"
-                checked={isEditableUser}
-                onChange={handleCheckboxChange}
-                className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
-            />
-            </div>
-            {isOpen && (
-            <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                <h2 className="text-2xl font-bold mb-2 text-white2">Not A Bag Id</h2>
-                <button 
-                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none"
-                onClick={togglePopup}
-                >
-                Close
-                </button>
-            </div>
-            </div>
-            )}
-            {/* {!scanningProducts && <button onClick={submitBagId} className="ml-2">Submit BagId</button>} */}
+            {/* <button onClick={toggleReadOnly} className="ml-2 p-2 border-2 border-black bg-gray-200">
+                {isReadOnly ? 'Enable Input' : 'Disable Input'}
+                E
+            </button> */}
         </div>
-        
     );
 }
 

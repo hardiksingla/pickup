@@ -12,7 +12,6 @@ const TextBox = () => {
     const [isOpen, setIsOpen] = useState(false);
     const inputRef = useRef(null);
     const [isEditable, setIsEditable] = useState(false);
-    const [isEditableUser, setIsEditableUser] = useState(false);
     
     const handleChange = (e) => {
         setBarcode(e.target.value);
@@ -54,11 +53,9 @@ const TextBox = () => {
           if (inputRef.current) {
             setIsEditable(true);
             inputRef.current.focus();
-            if (!isEditableUser){
-                setTimeout(() => {
-                  setIsEditable(false);
-                }, 200);
-            }
+            setTimeout(() => {
+              setIsEditable(false);
+            }, 1); // Make the input read-only again after a short delay
           }
         };
         document.addEventListener('keydown', focusInput);
@@ -69,7 +66,7 @@ const TextBox = () => {
         return () => {
             document.removeEventListener('keydown', focusInput);
         };
-    }, [isEditableUser]);
+    }, []);
 
     useEffect(() => {
         if (barcodevalueLengthVal == 9 && !scanningProducts) {
@@ -133,13 +130,10 @@ const TextBox = () => {
         }
     }, []);
 
-    const handleCheckboxChange = () => {
-        setIsEditableUser(!isEditableUser);
-        setIsEditable(!isEditable);
-    };
+    
 
     return (
-        <div className={"my-5"}>
+        <div className={`my-5`}>
             <input
                 ref={inputRef}
                 type="text"
@@ -151,18 +145,6 @@ const TextBox = () => {
                 className="border-4 border-black"
                 placeholder=""
             />
-            <div className="flex items-center space-x-2 justify-center">
-            <label htmlFor="simpleCheckbox" className="text-gray-700 select-none ">
-                edit
-            </label>
-            <input
-                type="checkbox"
-                id="simpleCheckbox"
-                checked={isEditableUser}
-                onChange={handleCheckboxChange}
-                className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
-            />
-            </div>
             {isOpen && (
             <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
             <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
@@ -176,7 +158,6 @@ const TextBox = () => {
             </div>
             </div>
             )}
-            {/* {!scanningProducts && <button onClick={submitBagId} className="ml-2">Submit BagId</button>} */}
         </div>
         
     );
