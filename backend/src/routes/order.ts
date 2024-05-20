@@ -27,24 +27,33 @@ const productSubmitZod = zod.object({
 
 router.post('/order',authMiddleware, async (req, res) => {
     console.log(req.body.from , req.body.to , req.phoneNumber , req.body.isPrepaid);
-    let order: any = await Order.findOne({
+    const update = {
+        $set: {
+            status: req.phoneNumber
+        }
+    };
+    
+    const options = {
+        new: true,
+        runValidators: true
+    };
+    
+    
+    let order: any = await Order.findOneAndUpdate({
         status: req.phoneNumber,
         prepaid: req.body.isPrepaid,
         orderNo: {
             $gte: req.body.from,
             $lte: req.body.to
         }
-    });
+    }, update, options);
     if (!order){
-        order  = await Order.findOne({status : "pending" , prepaid : req.body.isPrepaid , orderNo : { $gte: req.body.from, $lte: req.body.to } });
+        order  = await Order.findOneAndUpdate({status : "pending" , prepaid : req.body.isPrepaid , orderNo : { $gte: req.body.from, $lte: req.body.to } } , update, options);
     }
     if (!order){
         res.status(200).json({message : "No pending orders" , messageStatus: 0});
         return;
-    }
-    order.status = req.phoneNumber;
-    await order.save();
-    
+    }    
     let products : any = [];
     const orderId = order.id;
     const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders/${orderId}.json`);
