@@ -42,6 +42,9 @@ router.post('/order',authMiddleware, async (req, res) => {
         res.status(200).json({message : "No pending orders" , messageStatus: 0});
         return;
     }
+    order.status = req.phoneNumber;
+    await order.save();
+    
     let products : any = [];
     const orderId = order.id;
     const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders/${orderId}.json`);
@@ -71,8 +74,7 @@ router.post('/order',authMiddleware, async (req, res) => {
         paymentStatus: order.paymentStatus
     }
 
-    order.status = req.phoneNumber;
-    await order.save();
+    
 
 
     res.status(200).json(data);
