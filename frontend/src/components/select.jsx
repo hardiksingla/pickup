@@ -32,15 +32,18 @@ function Select() {
         if (isNaN(fromVal)) {
             fromVal = 0;
             setFrom('0'); // Update the 'from' state with the default value
+            localStorage.setItem('from', '0'); // Store the 'from' value in local storage
         }
 
         // Check and set default for 'to' if not provided or invalid
         if (isNaN(toVal) || toVal === 0) {
             toVal = 99999999;
             setTo('99999999'); // Update the 'to' state with the default value
+            localStorage.setItem('to', '99999999'); // Store the 'to' value in local storage
         }
         if (toVal >= fromVal) {
             setPrepaid(isPrepaidOption); // Update the prepaid status based on the button clicked
+            localStorage.setItem('isPrepaid', isPrepaidOption); // Store the prepaid status in local storage
             navigate('/home');
         } else {
             alert('The "to" value must be greater than the "from" value.');
@@ -59,6 +62,15 @@ function Select() {
         setUpadteLoading(true)
         const response = await axios.post(`${API_URL}/api/v1/order/updateOrders`);
         setUpadteLoading(false)
+    }
+
+    const toOnChange = (value) => {
+        setTo(value);
+        localStorage.setItem('to', value);
+    }
+    const fromOnChange = (value) => {
+        setFrom(value);
+        localStorage.setItem('from', value);
     }
 
 
@@ -87,7 +99,9 @@ function Select() {
                     id="fromInput"
                     type="text"
                     placeholder="from"
-                    onChange={(e) => setFrom(e.target.value)}
+                    onChange={(e) => fromOnChange(e.target.value)}
+                    // onChange={(e) => setFrom(e.target.value)}
+
                     value={fromValue}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
@@ -98,7 +112,8 @@ function Select() {
                     id="toInput"
                     type="text"
                     placeholder="to"
-                    onChange={(e) => setTo(e.target.value)}
+                    onChange={(e) => toOnChange(e.target.value)}
+                    // onChange={(e) => setTo(e.target.value)}
                     value={toValue}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />

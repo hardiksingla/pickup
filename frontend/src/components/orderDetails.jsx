@@ -27,9 +27,13 @@ const OrderDetails = () => {
     }
 
     const dataFetch = async () => {
+      const prepaid = localStorage.getItem("isPrepaid");
+      const fromL = localStorage.getItem("from");
+      const toL = localStorage.getItem("to");
       try {
         const response = await axios.post(
           `${API_URL}/api/v1/order/order`,
+          // { isPrepaid: prepaid, from: fromL || 0, to: toL || 99999999 },
           { isPrepaid: isprepaid, from: fromValue || 0, to: toValue || 99999999 },
           { headers: { Authorization: `Bearer ${token}` } }
         );
