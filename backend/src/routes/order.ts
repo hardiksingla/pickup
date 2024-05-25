@@ -31,24 +31,31 @@ router.post('/order',authMiddleware, async (req, res) => {
         $set: {
             status: req.phoneNumber
         }
-    };
-    
+    };    
     const options = {
         new: true,
         runValidators: true
     };
     
     
-    let order: any = await Order.findOneAndUpdate({
+    let query: any = {
         status: req.phoneNumber,
-        prepaid: req.body.isPrepaid,
         orderNo: {
-            $gte: req.body.from,
-            $lte: req.body.to
+        $gte: req.body.from,
+        $lte: req.body.to
         }
-    }, update, options);
+    };
+    if (req.body.isPrepaid == true || req.body.isPrepaid == false) {
+        query.prepaid = req.body.isPrepaid;
+    }
+    console.log("final ",query.prepaid);
+    console.log("query",query);
+
+
+    let order: any = await Order.findOneAndUpdate(query, update, options);
     if (!order){
-        order  = await Order.findOneAndUpdate({status : "pending" , prepaid : req.body.isPrepaid , orderNo : { $gte: req.body.from, $lte: req.body.to } } , update, options);
+        query.status = "pending";    
+        order = await Order.findOneAndUpdate(query, update, options);
     }
     if (!order){
         res.status(200).json({message : "No pending orders" , messageStatus: 0});

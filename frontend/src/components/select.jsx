@@ -57,6 +57,9 @@ function Select() {
     const handlePostPaidSelection = () => {
         validateAndNavigate(false);
     };
+    const handleAllSelection = () => {
+        validateAndNavigate(null);
+    }
 
     const refreshOrders = async () => {
         setUpadteLoading(true)
@@ -72,6 +75,7 @@ function Select() {
         setFrom(value);
         localStorage.setItem('from', value);
     }
+
 
 
     return (
@@ -121,6 +125,7 @@ function Select() {
         </div>
             <div>
                 <button onClick={handlePrepaidSelection} className="m-3">Prepaid</button> 
+                <button onClick={handleAllSelection} className="m-3">All</button>
                 <button onClick={handlePostPaidSelection} className="m-3">Cash On delivery</button>
             </div>
             <div>
