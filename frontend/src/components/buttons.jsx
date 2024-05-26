@@ -20,27 +20,22 @@ const Buttons = () => {
     const [bagIdReqValue , setBagIdReqValue] = useRecoilState(bagIdReq);
 
     const reset = () => {
-        if(bagIdReqValue){
-            setBagValue('');
-            setScanningProduct(false)
-        }
-        
+        setBagValue('');
+        setScanningProduct(true)
     }
 
-    useEffect(() => {   
-       if (!bagIdReqValue){
-        console.log('reset');
-        setScanningProduct(true)
-       }else{
-        setScanningProduct(false)
-       }
-    }, [bagIdReqValue]);
-
     const dataFetch = async () => {
+        const prepaid = localStorage.getItem("isPrepaid");
+        const fromL = localStorage.getItem("from");
+        const toL = localStorage.getItem("to");
         console.log('dataFetch');
         const token = localStorage.getItem("token");
         console.log(token);
-        const response = await axios.post(`${API_URL}/api/v1/order/order` , {isPrepaid: isprepaid, from: fromValue || 0, to: toValue || 99999999 },{headers: { Authorization: `Bearer ${token}` }});
+        const response = await axios.post(
+            `${API_URL}/api/v1/order/order`,
+            { isPrepaid: prepaid, from: fromL || 0, to: toL || 99999999 },
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
         console.log(response.data);                
         if(response.data.messageStatus == 0){
             console.log("sfefsf:,",response.data.messageStatus)
@@ -61,6 +56,10 @@ const Buttons = () => {
     const submit = async (e) => {
         e.preventDefault();
         if (totalItems === completedItems) {
+            if (bagIdReqValue === true && bagIdValue.length !== 9) {
+                setIsOpen(true);
+                return;
+            }
             console.log('submit');
             const endpoint = API_URL+"/api/v1/order/submit"
             console.log(endpoint);
@@ -76,19 +75,14 @@ const Buttons = () => {
                 dataFetch()
             }
         }else{
-            // alert('Please complete all items')
             setIsOpen(true)
         }
     };
     const togglePopup = () => {
         setIsOpen(!isOpen);
       };
-    // const toggleSkipPopup = () => {
-    //     setIsSkipOpen(!isOpen);
-    // };
 
     const handleSubmit = async () => {
-        // alert(`You selected: ${selectedAnswer}`);
         setIsSkipOpen(false);
         console.log(API_URL);
         console.log(orderId);
@@ -110,7 +104,6 @@ const Buttons = () => {
 
     return (
         <>
-
         {isSkipOpen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
@@ -169,6 +162,7 @@ const Buttons = () => {
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
                     <h2 className="text-2xl font-bold mb-2 text-white2">Can Not Submit</h2>
                     <p className="text-gray-700 mb-4 text-white2">All the Items Have Not Been Picked Yet</p>
+                    <p className="text-gray-700 mb-4 text-white2">OR bag Id not yet entered</p>
                     <button 
                     className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none"
                     onClick={togglePopup}

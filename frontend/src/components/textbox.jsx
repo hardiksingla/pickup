@@ -1,5 +1,5 @@
 import { useRecoilState, useRecoilValue } from "recoil";
-import { barcodeValue, orderDetails, barcodeValueLength, scanningProduct, bagId } from '../store/atoms/barcode';
+import { barcodeValue, orderDetails, barcodeValueLength, scanningProduct, bagId,itemNo } from '../store/atoms/barcode';
 import { useEffect, useState, useRef } from "react";
 
 const TextBox = () => {
@@ -13,6 +13,7 @@ const TextBox = () => {
     const inputRef = useRef(null);
     const [isEditable, setIsEditable] = useState(false);
     const [isEditableUser, setIsEditableUser] = useState(false);
+    const [prodNoV, setProdNo] = useRecoilState(itemNo);
     
     const handleChange = (e) => {
         setBarcode(e.target.value);
@@ -72,6 +73,7 @@ const TextBox = () => {
     }, [isEditableUser]);
 
     useEffect(() => {
+        console.log(scanningProducts,"scanningProduct")
         if (barcodevalueLengthVal == 9 && !scanningProducts) {
             console.log("Barcode length is 9 and not scanning products");
             setBagIdValue(barcode);
@@ -113,6 +115,9 @@ const TextBox = () => {
                     setIsRed(false);
                 }, 1000);
                 console.log(`Product with SKU ${barcode} not found.`);
+            }
+            if(prodNoV.total === prodNoV.completed){
+                setScanningProduct(false);
             }
 
             // Log the updated order
