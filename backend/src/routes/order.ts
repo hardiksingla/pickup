@@ -45,7 +45,7 @@ router.post('/order',authMiddleware, async (req, res) => {
         $lte: req.body.to
         }
     };
-    if (req.body.isPrepaid == true || req.body.isPrepaid == false) {
+    if (req.body.isPrepaid == "true" || req.body.isPrepaid == "false") {
         query.prepaid = req.body.isPrepaid;
     }
     console.log("final ",query.prepaid);
