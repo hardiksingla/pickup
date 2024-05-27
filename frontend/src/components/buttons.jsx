@@ -86,11 +86,13 @@ const Buttons = () => {
         setIsSkipOpen(false);
         console.log(API_URL);
         console.log(orderId);
+        
         const respone = await axios({method : 'post', url : `${API_URL}/api/v1/order/submit`,data: {
             orderId : orderId,
             status : 'skipped',
             comment : selectedAnswer,
-            bagId : bagIdValue
+            bagId : bagIdValue,
+            products : orderDetailsData.products
         }})
 
         if (respone.data.status == 1){

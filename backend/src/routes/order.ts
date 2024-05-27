@@ -242,11 +242,63 @@ router.post('/submit', async (req, res) => {
     order.status = status === "completed" ? "completed" : req.body.comment;
     order.bagId = req.body.bagId;
     order.skipReason = req.body.comment;
+    console.log("order",req.body.products);
+    order.productStatus = req.body.products;
 
     await order.save();
 
     res.status(200).json({ message: "Order updated" , status:1});
 });
+
+
+router.post('/getskipped', async (req, res) => {
+    console.log("Request to /getskipped with body:", req.body);
+    
+    try {
+        let deleteArr = ["pending", "completed"];
+        const users = await User.find({});
+        for (const user of users){
+            deleteArr.push(user.phoneNumber);
+        }
+        console.log("Delete array:", deleteArr);
+        
+        let skipped : any;
+        if (req.body.next) {
+            skipped = await Order.findOne({
+                "status": { "$nin": deleteArr },
+                "orderNo": { "$gt": req.body.orderNo }
+            });
+        } else {
+            skipped = await Order.find({
+                "status": { "$nin": deleteArr },
+                "orderNo": { "$lt": req.body.orderNo }
+            }).sort({ orderNo: -1 }).limit(1);
+            skipped = skipped.length > 0 ? skipped[0] : null;
+            console.log("Previous skipped order:", skipped);
+        }
+        
+        if (!skipped) {
+            console.log("No skipped orders found based on the provided orderNo. Fetching the first available skipped order.");
+            skipped = await Order.findOne({
+                "status": { "$nin": deleteArr },
+                "orderNo": { "$gt": 0 }
+            });
+            if (!skipped) {
+                console.log("No skipped orders available.");
+                return res.status(200).json({ message: "No skipped orders" });
+            }
+        }
+        
+        console.log("Skipped order found:", skipped);
+        res.status(200).json({ message: "Skipped order found", skipped: skipped });
+
+    } catch (error) {
+        console.error("Error in /getskipped route:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+});
+
+
 
 
 

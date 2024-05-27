@@ -8,8 +8,8 @@ dotenv.config();
 const connectDB = async () => {
   try {
     await mongoose.connect(
-      "mongodb+srv://hardiksingla007:k6GxsfWvs6QaojIs@cluster0.otp7pa7.mongodb.net/pickup?retryWrites=true&w=majority&appName=Cluster0"
-      // "mongodb+srv://07hardiksingla:ptGG2BEXxTry4H2C@cluster0.dkqwq2p.mongodb.net/pickuptest?retryWrites=true&w=majority&appName=Cluster0"
+      // "mongodb+srv://hardiksingla007:k6GxsfWvs6QaojIs@cluster0.otp7pa7.mongodb.net/pickup?retryWrites=true&w=majority&appName=Cluster0"
+      "mongodb+srv://07hardiksingla:ptGG2BEXxTry4H2C@cluster0.dkqwq2p.mongodb.net/pickuptest?retryWrites=true&w=majority&appName=Cluster0"
       // "mongodb://localhost:27016/pickup"
     );
     console.log("MongoDB connection SUCCESS");
@@ -62,6 +62,9 @@ const ordersSchema = new mongoose.Schema({
   // skipReason:{
   //   type: String
   // }
+  productStatus: {
+    type: Array
+  }
   
 });
 

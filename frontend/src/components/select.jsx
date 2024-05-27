@@ -126,10 +126,13 @@ function Select() {
             <div>
                 <button onClick={handlePrepaidSelection} className="m-3">Prepaid</button> 
                 <button onClick={handleAllSelection} className="m-3">All</button>
-                <button onClick={handlePostPaidSelection} className="m-3">Cash On delivery</button>
+                <button onClick={handlePostPaidSelection} className="m-3">COD</button>
             </div>
             <div>
-                <button onClick={refreshOrders} className="m-3">refresh orders</button>
+                <button onClick={() => navigate('skipped')} className="m-3">Skipped</button>
+            </div>
+            <div>
+                <button onClick={refreshOrders} className="m-3">Refresh Orders</button>
                 {upadteLoading && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
