@@ -288,6 +288,70 @@ router.post('/getskipped', async (req, res) => {
                 return res.status(200).json({ message: "No skipped orders" });
             }
         }
+
+        if (skipped.productStatus.length === 0) {
+            let products : any = [];
+            const orderId = skipped.id;
+            const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders/${orderId}.json`);
+        
+        
+            const lineItems = orderDetails.data.order.line_items;
+            const refunds = orderDetails.data.order.refunds;
+        
+            // Create a map to store updated quantities of each product
+            const updatedQuantities = {};
+        
+            // Initialize quantities from line items
+            for (const lineItem of lineItems) {
+                const productId = lineItem.product_id;
+                if (productId === null) {
+                    continue;
+                }
+                if (!updatedQuantities[productId]) {
+                    updatedQuantities[productId] = lineItem.quantity;
+                } else {
+                    updatedQuantities[productId] += lineItem.quantity;
+                }
+            }
+        
+            // Adjust quantities based on refunds
+            for (const refund of refunds) {
+                for (const refundLineItem of refund.refund_line_items) {
+                    const refundedProductId = refundLineItem.line_item_id;
+                    const lineItem = lineItems.find(item => item.id === refundedProductId);
+                    if (lineItem && updatedQuantities[lineItem.product_id] !== undefined) {
+                        updatedQuantities[lineItem.product_id] -= refundLineItem.quantity;
+                    }
+                }
+            }
+        
+            // Fetch product details and prepare the products list
+            for (const lineItem of lineItems) {
+                const productId = lineItem.product_id;
+                if (productId === null) {
+                    continue;
+                }
+        
+                const product = await axios.get(`https://${SHOPIFY_API_KEY}/admin/products/${productId}.json`);
+                const quantity = updatedQuantities[productId] !== undefined ? updatedQuantities[productId] : lineItem.quantity;
+        
+                products.push({
+                    name: product.data.product.title,
+                    sku: lineItem.sku,
+                    quantity: quantity,
+                    image: product.data.product.image !== null && product.data.product.image.src !== null ? product.data.product.image.src : "null",
+                    location: product.data.product.variants[0].inventory_item_id,
+                    completionStatus: 0
+                });
+        
+            }
+            skipped = {
+                orderNo : skipped.orderNo,
+                productStatus : products,
+                paymentStatus: skipped.paymentStatus,
+                status: skipped.status
+            }
+        }
         
         console.log("Skipped order found:", skipped);
         res.status(200).json({ message: "Skipped order found", skipped: skipped });
