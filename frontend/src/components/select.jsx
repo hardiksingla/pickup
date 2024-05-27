@@ -13,6 +13,8 @@ function Select() {
     const [toValue, setTo] = useRecoilState(to);
     const [isChecked, setIsChecked] = useRecoilState(bagIdReq);
     const [upadteLoading, setUpadteLoading] = useState(false)
+    const [updateing, setUpdateing] = useState(false)
+    const [updateFrom , setUpdateFrom] = useState(5942413525275)
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
     };
@@ -62,9 +64,13 @@ function Select() {
     }
 
     const refreshOrders = async () => {
-        setUpadteLoading(true)
-        const response = await axios.post(`${API_URL}/api/v1/order/updateOrders`);
+        setUpadteLoading(true)        
+    }
+    const update = async () => {
+        setUpdateing(true)
+        const response = await axios.post(`${API_URL}/api/v1/order/updateOrders` , {from : updateFrom});
         setUpadteLoading(false)
+        setUpdateing(false)
     }
 
     const toOnChange = (value) => {
@@ -136,7 +142,17 @@ function Select() {
                 {upadteLoading && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                    <h2 className="text-2xl font-bold mb-2 text-white2">Refreshing</h2>
+                    {
+                        !updateing ?
+                        <div>
+                        <p className="m-5">Update from</p>
+                        <input type="text" value={updateFrom} onChange={(e) => setUpdateFrom(e.target.value)} />
+                        <button onClick={update} className="m-5">Update</button>
+                        </div>
+                        : 
+                        <h2 className="text-2xl font-bold mb-2 text-white2">Refreshing</h2>
+                    }
+
                 </div>
                 </div>
                 )}
