@@ -3,13 +3,14 @@ import { number } from "zod";
 import dotenv from "dotenv";
 
 dotenv.config();
-// const MONGODB_URI : any = process.env.MONGODB_URI;
+const MONGODB_URI : string = process.env.MONGODB_URI as string;
 
 const connectDB = async () => {
   try {
     await mongoose.connect(
+      MONGODB_URI
       // "mongodb+srv://hardiksingla007:k6GxsfWvs6QaojIs@cluster0.otp7pa7.mongodb.net/pickup?retryWrites=true&w=majority&appName=Cluster0"
-      "mongodb+srv://07hardiksingla:ptGG2BEXxTry4H2C@cluster0.dkqwq2p.mongodb.net/pickuptest?retryWrites=true&w=majority&appName=Cluster0"
+      // "mongodb+srv://07hardiksingla:ptGG2BEXxTry4H2C@cluster0.dkqwq2p.mongodb.net/pickuptest?retryWrites=true&w=majority&appName=Cluster0"
       // "mongodb://localhost:27016/pickup"
     );
     console.log("MongoDB connection SUCCESS");
