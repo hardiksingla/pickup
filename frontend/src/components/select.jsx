@@ -5,7 +5,6 @@ import axios from "axios";
 import { API_URL } from "../config.js";
 import { useState } from "react";
 
-
 function Select() {
     const [isPrepaid, setPrepaid] = useRecoilState(prepaidReq);
     const navigate = useNavigate();
@@ -14,7 +13,7 @@ function Select() {
     const [isChecked, setIsChecked] = useRecoilState(bagIdReq);
     const [upadteLoading, setUpadteLoading] = useState(false)
     const [updateing, setUpdateing] = useState(false)
-    const [updateFrom , setUpdateFrom] = useState(5942413525275)
+    const [updateFrom , setUpdateFrom] = useState()
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
     };
