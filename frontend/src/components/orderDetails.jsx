@@ -29,14 +29,14 @@ const OrderDetails = () => {
     }
 
     const dataFetch = async () => {
-      const prepaid = localStorage.getItem("isPrepaid");
+      const orderType = localStorage.getItem("selectedOption");
       const fromL = localStorage.getItem("from");
       const toL = localStorage.getItem("to");
-      console.log(prepaid, "local prepaid")
+      console.log(orderType, "local prepaid")
       try {
         const response = await axios.post(
           `${API_URL}/api/v1/order/order`,
-          { isPrepaid: prepaid, from: fromL || 0, to: toL || 99999999 },
+          { orderType , from: fromL || 0, to: toL || 99999999 },
           { headers: { Authorization: `Bearer ${token}` } }
         );
 
@@ -47,10 +47,12 @@ const OrderDetails = () => {
             products: [],
           });
         } else {
-          response.data.products.forEach(product => {
-            product.completionStatus = 0;
-          });
+          // response.data.products.forEach(product => {
+          //   product.completionStatus = 0;
+          // });
+          console.log(response.data, "response")
           setOrderDetailsData(response.data);
+          console.log(orderDetailsData, "orderDetailsData")
           setscanningProduct(true)
         }
       } catch (error) {
@@ -68,6 +70,10 @@ const OrderDetails = () => {
       <p className="text-xl">
         {prodNo.completed}/{prodNo.total}
       </p>
+      {
+        orderDetailsData.skipReason !=  null  &&
+        <p>{orderDetailsData.skipReason}</p>
+      }
     </div>
   );
 };

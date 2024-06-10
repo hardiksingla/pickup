@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { number } from "zod";
+import { number, string } from "zod";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -60,11 +60,25 @@ const ordersSchema = new mongoose.Schema({
   bagId: {
     type: String,
   },
-  // skipReason:{
-  //   type: String
-  // }
+  skipReason: {
+    type: String
+  },
   productStatus: {
     type: Array
+  },
+  fulfilledOn : {
+    type : String,
+    required : true
+  },
+  fulfilledBy : {
+    type : String
+  },
+  fulfillmentTime: {  
+    type : String
+  },
+  orderedAt: {
+    type : String,
+    // required : true
   }
   
 });
@@ -98,6 +112,10 @@ const ProductOrderedSchema = new mongoose.Schema({
     type: String,
   },
   quantity: {
+    type: Number,
+    required: true,
+  },
+  completionStatus: {
     type: Number,
     required: true,
   }

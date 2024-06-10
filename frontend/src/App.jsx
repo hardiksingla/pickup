@@ -6,6 +6,7 @@ import Home from './components/Home';
 import Select from './components/select'; // Ensure the file name's capitalization matches.
 import Login from './components/login';
 import Skipped from './components/skipped';
+import SelectV2 from './components/SelectV2';
 
 function App() {
   return (
@@ -13,7 +14,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Select />} />
+          <Route path="/" element={<SelectV2 />} />
           <Route path="/home" element={<Home />} />
           <Route path="/skipped" element={<Skipped />} />
         </Routes>

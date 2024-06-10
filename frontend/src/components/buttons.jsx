@@ -25,15 +25,16 @@ const Buttons = () => {
     }
 
     const dataFetch = async () => {
-        const prepaid = localStorage.getItem("isPrepaid");
-        const fromL = localStorage.getItem("from");
+        const orderType = localStorage.getItem("selectedOption");
+        // const fromL = localStorage.getItem("from");
+        const fromL = orderDetailsData.orderId + 1;
         const toL = localStorage.getItem("to");
         console.log('dataFetch');
         const token = localStorage.getItem("token");
         console.log(token);
         const response = await axios.post(
             `${API_URL}/api/v1/order/order`,
-            { isPrepaid: prepaid, from: fromL || 0, to: toL || 99999999 },
+            { orderType , from: fromL || 0, to: toL || 99999999 },
             { headers: { Authorization: `Bearer ${token}` } }
           );
         console.log(response.data);                
@@ -41,9 +42,9 @@ const Buttons = () => {
             console.log("sfefsf:,",response.data.messageStatus)
             setOrderDetailsData({orderId : "No Order",paymentStatus : "No Order",products : []})
           }else{
-                for (const product of response.data.products){
-                    product.completionStatus = 0;
-                }
+                // for (const product of response.data.products){
+                //     product.completionStatus = 0;
+                // }
                 setOrderDetailsData(response.data);
           }
     }
@@ -67,8 +68,11 @@ const Buttons = () => {
             const respone = await axios.post(endpoint , {
                 orderId : orderId,
                 status : 'completed',
-                bagId : bagIdValue
-            })
+                bagId : bagIdValue,
+                products : orderDetailsData.products
+            },
+            {headers : {Authorization : `Bearer ${localStorage.getItem('token')}`}}
+        )
             console.log(respone);
             if (respone.data.status == 1){            
                 reset ()
@@ -93,7 +97,9 @@ const Buttons = () => {
             comment : selectedAnswer,
             bagId : bagIdValue,
             products : orderDetailsData.products
-        }})
+        },
+        headers : {Authorization : `Bearer ${localStorage.getItem('token')}`}
+    })
 
         if (respone.data.status == 1){
             reset()
@@ -104,8 +110,13 @@ const Buttons = () => {
         setSelectedAnswer(event.target.value);
       };
 
+    // const handelDebug = () => {
+    //     console.log(orderDetailsData);
+    // }   
+
     return (
         <>
+        {/* <button onClick={handelDebug}>debug</button> */}
         {isSkipOpen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">

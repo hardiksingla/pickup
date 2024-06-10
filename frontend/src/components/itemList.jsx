@@ -11,7 +11,7 @@ const ItemList = () => {
             return;
         }
         setProducts(orderDetailsData.products.map((product , index) => (
-            <div key={`${product.productId}-${product.sku}-${index}`} className={`flex justify-between m-5 border-2 p-1 ${product.completionStatus === product.quantity ? 'bg-bggr' : ''}`}>
+            <div key={`${product.productId}-${product.sku}-${index}`} className={`flex justify-between m-5 border-2 p-1 ${product.completionStatus === product.quantity ? 'bg-bggr' : ''} ${product.completionStatus !== product.quantity && product.completionStatus >= 1 ? 'bg-bgyellow' : ''}`}>
                 <img src={product.image} alt="Product" className="w-20 h-20" />
                 <div className="w-full">
                     <p>{product.name}</p>
