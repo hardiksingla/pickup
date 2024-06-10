@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 
 function SelectV2() {
     const [selectedOption, setSelectedOption] = useState('');
-    const [isPrepaid, setPrepaid] = useRecoilState(prepaidReq);
     const navigate = useNavigate();
     const [fromValue, setFrom] = useRecoilState(from);
     const [toValue, setTo] = useRecoilState(to);
@@ -15,8 +14,16 @@ function SelectV2() {
     const [upadteLoading, setUpadteLoading] = useState(false)
     const [updateing, setUpdateing] = useState(false)
     const [updateFrom , setUpdateFrom] = useState()
+    const [yesterdayCheck , setYesterdayCheck] = useState(false)
+    
+    
+    const handleYesterdayCheck = () => {
+        setYesterdayCheck(!yesterdayCheck);
+        localStorage.setItem('yesterdayCheck', !yesterdayCheck);
+    };
     const handleCheckboxChange = () => {
         setIsChecked(!isChecked);
+        console.log(isChecked);
     };
 
     const logout = () => {
@@ -50,17 +57,6 @@ function SelectV2() {
         }
     };
 
-    const handlePrepaidSelection = () => {
-        validateAndNavigate(true);
-    };
-
-    const handlePostPaidSelection = () => {
-        validateAndNavigate(false);
-    };
-    const handleAllSelection = () => {
-        validateAndNavigate(null);
-    }
-
     const refreshOrders = async () => {
         setUpadteLoading(true)        
     }
@@ -90,6 +86,8 @@ function SelectV2() {
     }
 
     useEffect(() => {
+        const yesterday = localStorage.getItem("yesterdayCheck");
+        setYesterdayCheck(yesterday == 'true' ? true : false);
         const orderType = localStorage.getItem('selectedOption');
         setSelectedOption(orderType);
     }, [selectedOption]);
@@ -183,10 +181,21 @@ function SelectV2() {
                     Skipped
                     </label>
                 </div>
+            
+            
+            <div className="flex items-center space-x-2 justify-center mt-5">
+            <label htmlFor="simple" className="text-gray-700 select-none ">
+                Pack till yesterday
+            </label>
+            <input
+                type="checkbox"
+                id="simple"
+                checked={yesterdayCheck}
+                onChange={handleYesterdayCheck}
+                className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
+            />
 
-            {/* <div>
-                <button onClick={() => navigate('skipped')} className="m-3">Skipped</button>
-            </div> */}
+            </div>
             <div>
                 
                 <button onClick={find} className="m-3">Find</button>

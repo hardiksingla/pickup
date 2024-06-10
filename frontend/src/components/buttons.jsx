@@ -34,7 +34,7 @@ const Buttons = () => {
         console.log(token);
         const response = await axios.post(
             `${API_URL}/api/v1/order/order`,
-            { orderType , from: fromL || 0, to: toL || 99999999 },
+            { orderType , from: fromL || 0, to: toL || 99999999 , yesterday : localStorage.getItem('yesterdayCheck')},
             { headers: { Authorization: `Bearer ${token}` } }
           );
         console.log(response.data);                
@@ -112,8 +112,23 @@ const Buttons = () => {
 
     // const handelDebug = () => {
     //     console.log(orderDetailsData);
-    // }   
+    // }
+    const forceComplete = async () => {
+        const respone = await axios({method : 'post', url : `${API_URL}/api/v1/order/submit`,data: {
+            orderId : orderId,
+            status : 'manualComplete',
+            bagId : bagIdValue,
+            products : orderDetailsData.products
+        },
+        headers : {Authorization : `Bearer ${localStorage.getItem('token')}`}
+    })
 
+    if (respone.data.status == 1){
+        reset()
+        dataFetch()
+        setIsOpen(!isOpen);
+    }
+    }
     return (
         <>
         {/* <button onClick={handelDebug}>debug</button> */}
@@ -183,6 +198,9 @@ const Buttons = () => {
                     Close
                     </button>
                 </div>
+                <button onClick={forceComplete} className="absolute top-5 right-3 p-1">
+                        Force Complete
+                </button>
                 </div>
             )}
         <div className="flex justify-around my-5">

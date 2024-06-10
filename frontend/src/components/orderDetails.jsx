@@ -36,7 +36,7 @@ const OrderDetails = () => {
       try {
         const response = await axios.post(
           `${API_URL}/api/v1/order/order`,
-          { orderType , from: fromL || 0, to: toL || 99999999 },
+          { orderType , from: fromL || 0, to: toL || 99999999  , yesterday : localStorage.getItem('yesterdayCheck')},
           { headers: { Authorization: `Bearer ${token}` } }
         );
 

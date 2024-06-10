@@ -19,7 +19,7 @@ const router = Express.Router();
 
 const productSubmitZod = zod.object({
     orderId: zod.number(),
-    status: zod.enum(["completed", "skipped"])
+    status: zod.enum(["completed", "skipped" , "manualComplete"]),
 });
 
 
@@ -52,10 +52,19 @@ router.post('/order',authMiddleware, async (req, res) => {
         // unassigned orders
 
         let assignedOrders = await Order.findOne({status: req.phoneNumber});
-        console.log("assignedOrders",assignedOrders);
+        // console.log("assignedOrders",assignedOrders);
         if (assignedOrders){    
             assignedOrders.status = "pending";
             await assignedOrders.save();
+        }
+
+        if (req.body.yesterday == 'true') {
+            const now = new Date(); 
+            const yesterday = new Date(now);
+            yesterday.setHours(0, 0, 0, 0); 
+            console.log("yesterdayMidnight",yesterday.toISOString());
+            query.orderedAt = { $lt : yesterday.toISOString() }
+            
         }
         if (req.body.orderType === "Prepaid") {
             query.prepaid = true;
@@ -73,7 +82,7 @@ router.post('/order',authMiddleware, async (req, res) => {
             res.status(200).json({message : "No pending orders" , messageStatus: 0});
             return;
         }
-        console.log("order",order);
+        // console.log("order",order);
         console.log(query);
     }
     else if (req.body.orderType === "Skipped") {
@@ -92,7 +101,7 @@ router.post('/order',authMiddleware, async (req, res) => {
     }      
     let products : any = [];
     const orderId = order.id;
-    console.log("orderId",order);
+    // console.log("orderId",order);
     // return res.status(400).json({ message: "Invalid order type" });
     
     const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/api/2024-04/orders/${orderId}.json`);
@@ -133,9 +142,9 @@ router.post('/order',authMiddleware, async (req, res) => {
         paymentStatus: order.paymentStatus,
         skipReason: order.skipReason ? order.skipReason : null
     }
-    console.log(order.skipReason);
+    // console.log(order.skipReason);
     
-    console.log("final data",data);
+    // console.log("final data",data);
 
     res.status(200).json(data);
 })
@@ -278,11 +287,6 @@ router.post("/updateOrders2", async (req, res) => {
         for (const order of response.data.orders){
             console.log(order.order_number);
             if (!prevOrdersList.includes(order.order_number)){
-                if (order.cancelled_at !== null){
-                    console.log(order.cancelled_at);
-                    console.log("cancelled not in mongo");
-                    continue;
-                }
                 
                 const paymentStatus = Array.isArray(order.payment_gateway_names) && order.payment_gateway_names.length > 0
                                     ? order.payment_gateway_names[0]
@@ -303,6 +307,11 @@ router.post("/updateOrders2", async (req, res) => {
                 let fulfilledOn = "null";
                 if (order.fulfillment_status === "fulfilled") {
                     fulfilledOn = "shopify";
+                }
+                if (order.cancelled_at !== null){
+                    console.log(order.cancelled_at);
+                    console.log("cancelled added to mongo");
+                    fulfilledOn = "cancelled";
                 }
 
                 const newOrder = new Order({
@@ -363,7 +372,7 @@ router.post('/submit', authMiddleware ,  async (req, res) => {
         res.status(400).json({ message: "Invalid order" });
         return
     }
-    order.status = status === "completed" ? "completed" : "skipped";
+    order.status = status ;
     order.bagId = req.body.bagId;
     order.skipReason = req.body.comment;
     order.productStatus = req.body.products;

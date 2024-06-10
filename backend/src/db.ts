@@ -74,10 +74,10 @@ const ordersSchema = new mongoose.Schema({
     type : String
   },
   fulfillmentTime: {  
-    type : String
+    type : Date
   },
   orderedAt: {
-    type : String,
+    type : Date,
     // required : true
   }
   
