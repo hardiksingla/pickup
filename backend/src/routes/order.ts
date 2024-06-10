@@ -296,7 +296,6 @@ router.post("/updateOrders2", async (req, res) => {
                     let productD = {
                         orderId: order.order_number,
                         productId: lineItem.product_id,
-                        quantity: lineItem.quantity,
                         completionStatus : 0
                     }
                     // const productOrdered = new ProductOrdered(productD);
@@ -322,7 +321,8 @@ router.post("/updateOrders2", async (req, res) => {
                     prepaid: order.financial_status === "paid" || order.financial_status === "partially_refunded" || order.financial_status === "partially_paid" ? true : false,
                     productStatus : productArr,
                     fulfilledOn : fulfilledOn,
-                    orderedAt : order.created_at
+                    orderedAt : order.created_at,
+                    lablePrinted: false,
                 });
                 await newOrder.save();
             }

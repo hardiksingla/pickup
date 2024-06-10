@@ -1,6 +1,6 @@
 import Express from "express";
 import zod from "zod";
-import { User , Order, ProductOrdered, Product} from "../db";
+import { User} from "../db";
 import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
 dotenv.config();

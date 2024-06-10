@@ -15,7 +15,19 @@ function SelectV2() {
     const [updateing, setUpdateing] = useState(false)
     const [updateFrom , setUpdateFrom] = useState()
     const [yesterdayCheck , setYesterdayCheck] = useState(false)
-    
+    const [exportScreen, setExportScreen] = useState(false)
+
+    const handleExport = () => {
+        setExportScreen(true)
+    };
+    const exportData = async () => {
+        const respose = await axios.post(`${API_URL}/api/v1/sheets/update`)
+        console.log(respose.data.status)
+        if(respose.data.status == 200){
+            
+            setExportScreen(false)
+        }
+    }
     
     const handleYesterdayCheck = () => {
         setYesterdayCheck(!yesterdayCheck);
@@ -97,7 +109,16 @@ function SelectV2() {
     return (
         <div>
         <button onClick={logout} className="absolute top-3 right-3">Logout</button>
-            
+        <button onClick={handleExport} className="absolute top-3 right-28">Export</button>
+        {exportScreen && 
+                <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                Do You want To Export?
+                <button onClick={exportData} className="m-3">Yes</button>
+                <button onClick={() => setExportScreen(false)} className="m-3">No</button>
+                </div>
+                </div>
+        }
             <div className="flex items-center space-x-2 justify-center mt-20">
             <label htmlFor="simpleCheckbox" className="text-gray-700 select-none ">
                 Bag Id required?
@@ -145,7 +166,7 @@ function SelectV2() {
                         checked={selectedOption === 'Postpaid'}
                         onChange={handleOptionChange}
                     />
-                    Postpaid
+                    COD
                     </label>
                 </div>
                 <div>
@@ -167,7 +188,7 @@ function SelectV2() {
                         checked={selectedOption === 'Both'}
                         onChange={handleOptionChange}
                     />
-                    Prepaid and Postpaid
+                    Prepaid and COD
                     </label>
                 </div>
                 <div>

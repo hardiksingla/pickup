@@ -79,7 +79,10 @@ const ordersSchema = new mongoose.Schema({
   orderedAt: {
     type : Date,
     // required : true
-  }
+  },
+  lablePrinted : {
+    type : Boolean
+  },
   
 });
 
