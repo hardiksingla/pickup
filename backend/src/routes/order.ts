@@ -52,10 +52,11 @@ router.post('/order',authMiddleware, async (req, res) => {
         // unassigned orders
 
         let assignedOrders = await Order.findOne({status: req.phoneNumber});
-        assignedOrders.status = "pending"; 
-
-        await assignedOrders.save();
-        
+        console.log("assignedOrders",assignedOrders);
+        if (assignedOrders){    
+            assignedOrders.status = "pending";
+            await assignedOrders.save();
+        }
         if (req.body.orderType === "Prepaid") {
             query.prepaid = true;
         } else if (req.body.orderType === "Postpaid") {
