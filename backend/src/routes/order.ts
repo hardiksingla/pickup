@@ -375,7 +375,7 @@ router.post('/submit', authMiddleware ,  async (req, res) => {
     order.bagId = req.body.bagId;
     order.skipReason = req.body.comment;
     order.productStatus = req.body.products;
-    order.fulfilledOn = status === "skipped" ? "null" : "shopify";
+    order.fulfilledOn = status === "skipped" ? "null" : "app";
     
     order.fulfilledBy = req.phoneNumber;
     order.fulfillmentTime = new Date();
