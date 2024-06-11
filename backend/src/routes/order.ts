@@ -85,8 +85,7 @@ router.post('/order',authMiddleware, async (req, res) => {
         // console.log("order",order);
         console.log(query);
     }
-    else if (req.body.orderType === "Skipped") {
-        query.fulfilledOn = "app";
+    else if (req.body.orderType === "Skipped") {    
         query.status = "skipped";
         console.log("query",query);
         order = await Order.findOne(query);
@@ -360,7 +359,7 @@ router.post("/updateOrders2", async (req, res) => {
 
 router.post('/submit', authMiddleware ,  async (req, res) => {
     const validationResult : any = productSubmitZod.safeParse(req.body);
-    console.log("vlaidation error " ,validationResult.error);
+    // console.log("vlaidation error " ,validationResult.error);
     if (!validationResult.success){
         console.log("Invalid request submit ")
         res.status(400).json({ message: "Invalid request submit" });
@@ -376,7 +375,7 @@ router.post('/submit', authMiddleware ,  async (req, res) => {
     order.bagId = req.body.bagId;
     order.skipReason = req.body.comment;
     order.productStatus = req.body.products;
-    order.fulfilledOn = "app";
+    order.fulfilledOn = status === "skipped" ? "null" : "shopify";
     
     order.fulfilledBy = req.phoneNumber;
     order.fulfillmentTime = new Date();
