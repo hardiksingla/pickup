@@ -323,7 +323,7 @@ router.post("/updateOrders2", async (req, res) => {
                     productStatus : productArr,
                     fulfilledOn : fulfilledOn,
                     orderedAt : order.created_at,
-                    lablePrinted: labelPrinted,
+                    lablePrinted: lablePrinted,
                 });
                 await newOrder.save();
             }
