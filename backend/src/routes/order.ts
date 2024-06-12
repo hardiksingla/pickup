@@ -4,6 +4,7 @@ import axios from "axios";
 import { User , Order, ProductOrdered, Product} from "../db";
 import dotenv from 'dotenv';
 import { authMiddleware } from "../middleware";
+import { skip } from "node:test";
 dotenv.config();
 
 declare module 'express-serve-static-core' {
@@ -396,115 +397,83 @@ router.post('/submit', authMiddleware ,  async (req, res) => {
 router.post('/getskipped', async (req, res) => {
     console.log("Request to /getskipped with body:", req.body);
     
-    try {
-        let deleteArr = ["pending", "completed"];
-        const users = await User.find({});
-        for (const user of users){
-            deleteArr.push(user.phoneNumber);
-        }
-        console.log("Delete array:", deleteArr);
-        
-        let skipped : any;
-        if (req.body.next) {
-            skipped = await Order.findOne({
-                "status": { "$nin": deleteArr },
-                "orderNo": { "$gt": req.body.orderNo }
-            });
-        } else {
-            skipped = await Order.find({
-                "status": { "$nin": deleteArr },
-                "orderNo": { "$lt": req.body.orderNo }
-            }).sort({ orderNo: -1 }).limit(1);
-            skipped = skipped.length > 0 ? skipped[0] : null;
-            console.log("Previous skipped order:", skipped);
-        }
-        
-        if (!skipped) {
-            console.log("No skipped orders found based on the provided orderNo. Fetching the first available skipped order.");
-            skipped = await Order.findOne({
-                "status": { "$nin": deleteArr },
-                "orderNo": { "$gt": 0 }
-            });
-            if (!skipped) {
-                console.log("No skipped orders available.");
-                return res.status(200).json({ message: "No skipped orders" });
-            }
-        }
-
-        if (skipped.productStatus.length === 0) {
-            let products : any = [];
-            const orderId = skipped.id;
-            const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders/${orderId}.json`);
-        
-        
-            const lineItems = orderDetails.data.order.line_items;
-            const refunds = orderDetails.data.order.refunds;
-        
-            // Create a map to store updated quantities of each product
-            const updatedQuantities = {};
-        
-            // Initialize quantities from line items
-            for (const lineItem of lineItems) {
-                const productId = lineItem.product_id;
-                if (productId === null) {
-                    continue;
-                }
-                if (!updatedQuantities[productId]) {
-                    updatedQuantities[productId] = lineItem.quantity;
-                } else {
-                    updatedQuantities[productId] += lineItem.quantity;
-                }
-            }
-        
-            // Adjust quantities based on refunds
-            for (const refund of refunds) {
-                for (const refundLineItem of refund.refund_line_items) {
-                    const refundedProductId = refundLineItem.line_item_id;
-                    const lineItem = lineItems.find(item => item.id === refundedProductId);
-                    if (lineItem && updatedQuantities[lineItem.product_id] !== undefined) {
-                        updatedQuantities[lineItem.product_id] -= refundLineItem.quantity;
-                    }
-                }
-            }
-        
-            // Fetch product details and prepare the products list
-            for (const lineItem of lineItems) {
-                const productId = lineItem.product_id;
-                if (productId === null) {
-                    continue;
-                }
-        
-                const product = await axios.get(`https://${SHOPIFY_API_KEY}/admin/products/${productId}.json`);
-                const quantity = updatedQuantities[productId] !== undefined ? updatedQuantities[productId] : lineItem.quantity;
-        
-                products.push({
-                    name: product.data.product.title,
-                    sku: lineItem.sku,
-                    quantity: quantity,
-                    image: product.data.product.image !== null && product.data.product.image.src !== null ? product.data.product.image.src : "null",
-                    location: product.data.product.variants[0].inventory_item_id,
-                    completionStatus: 0
-                });
-        
-            }
-            skipped = {
-                orderNo : skipped.orderNo,
-                productStatus : products,
-                paymentStatus: skipped.paymentStatus,
-                status: skipped.status
-            }
-        }
-        
-        console.log("Skipped order found:", skipped);
-        res.status(200).json({ message: "Skipped order found", skipped: skipped });
-
-    } catch (error) {
-        console.error("Error in /getskipped route:", error);
-        res.status(500).json({ message: "Internal server error" });
+    const order = await Order.findOne({ orderNo : req.body.orderNo });
+    if (!order){
+        return res.status(400).json({ message: "Invalid order number" });
     }
+    else if (order.fulfilledOn == "shopify"){
+        let products : any = [];
+        const orderId = order.id;
+        
+        const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/api/2024-04/orders/${orderId}.json`);
+    
+        const lineItems = orderDetails.data.order.line_items;
+    
+        for (const lineItem of lineItems) {
+            const productId = lineItem.product_id;
+            if (productId === null) {
+                continue;
+            }
+    
+            const product = await axios.get(`https://${SHOPIFY_API_KEY}/admin/api/2024-04/products/${productId}.json`);
+            const currernt_quantity = lineItem.current_quantity;
+    
+            const p = (order.productStatus).find((product) => {
+                return product.productId == lineItem.product_id
+            });
+    
+            products.push({
+                name: product.data.product.title,
+                productId: lineItem.product_id,
+                sku: lineItem.sku,
+                quantity: currernt_quantity,
+                image: product.data.product.image !== null && product.data.product.image.src !== null ? product.data.product.image.src : "null",
+                location: product.data.product.variants[0].inventory_item_id,
+                completionStatus: p.completionStatus
+            });
+    
+        }
+        const data = {
+            orderNo : order.orderNo,
+            productStatus : products,
+            paymentStatus: order.paymentStatus,
+            fulfilledOn: order.fulfilledOn, 
+            skipReason: order.skipReason ? order.skipReason : null
+        }
+        // console.log(order.skipReason);
+        
+        // console.log("final data",data);
+    
+        res.status(200).json(data);
+    }
+    else{
+        res.status(200).json(order);
+    }
+
 });
 
 
+
+router.post("/search", async (req, res) => {
+    console.log("Request to /search with body:", req.body);
+    const orderNo = req.body.orderNo;
+    const order = await Order.findOne({ orderNo: orderNo });
+    
+    if(!order) {
+        return res.status(400).json({ message: "Invalid order number" });
+    }
+    
+    if (order.fulfilledOn === "null" && order.status === "pending") {
+        return res.status(200).json({pending : true , skipped : false});
+
+    }
+    else if (order.fulfilledOn === "null" && order.status === "skipped") {
+        return res.status(200).json({pending : true , skipped : true});
+    }
+    else{
+        return res.status(200).json({pending : false});
+    }
+})
 
 
 

@@ -1,5 +1,5 @@
 import { useRecoilState, useSetRecoilState } from "recoil";
-import { prepaidReq, from, to ,bagIdReq } from "../store/atoms/barcode";
+import { prepaidReq, from, to ,bagIdReq , completeOrderNo } from "../store/atoms/barcode";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { API_URL } from "../config.js";
@@ -16,6 +16,9 @@ function SelectV2() {
     const [updateFrom , setUpdateFrom] = useState()
     const [yesterdayCheck , setYesterdayCheck] = useState(false)
     const [exportScreen, setExportScreen] = useState(false)
+    const [searchOrder, setSearchOrder] = useState('')
+    const [searchScreen , setSearchScreen] = useState(false)
+    const [searchComplete , setSearchComplete] = useRecoilState(completeOrderNo)
 
     const handleExport = () => {
         setExportScreen(true)
@@ -104,12 +107,37 @@ function SelectV2() {
         setSelectedOption(orderType);
     }, [selectedOption]);
 
-
+    const search = async () => {
+        const response = await axios.post(`${API_URL}/api/v1/order/search` , {orderNo : searchOrder});
+        console.log(response.data)
+        if (response.data.pending == true){
+            fromOnChange(searchOrder)
+            toOnChange(searchOrder)
+            if (response.data.skipped == false){
+                setSelectedOption('Both')
+                localStorage.setItem('selectedOption', 'Both');
+            }
+            else{
+                setSelectedOption('Skipped')
+                localStorage.setItem('selectedOption', 'Skipped');
+            }
+            setYesterdayCheck(false)
+            localStorage.setItem('yesterdayCheck', false)
+            
+            setSearchScreen(false)
+            navigate('/home')
+        }
+        else{
+            setSearchComplete(searchOrder)
+            navigate('/completed')
+        }
+    }
 
     return (
         <div>
         <button onClick={logout} className="absolute top-3 right-3">Logout</button>
         <button onClick={handleExport} className="absolute top-3 right-28">Export</button>
+        <button onClick={()=> setSearchScreen(true)} className="absolute top-3 right-52">Search</button>
         {exportScreen && 
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
@@ -119,6 +147,25 @@ function SelectV2() {
                 </div>
                 </div>
         }
+        {searchScreen && (
+                <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
+                <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+                
+                    <div>
+                    <p className="m-5">Serach Order</p>
+                    <input type="text" value={searchOrder} onChange={(e) => setSearchOrder(e.target.value)} />
+                    <button onClick={search} className="m-2 p-3">Serach</button>
+                    </div>
+                 
+
+                </div>
+                </div>
+            )}
+            <div className="mt-20">
+                
+                
+            </div>
+            
             <div className="flex items-center space-x-2 justify-center mt-20">
             <label htmlFor="simpleCheckbox" className="text-gray-700 select-none ">
                 Bag Id required?
@@ -131,7 +178,8 @@ function SelectV2() {
                 className="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500"
             />
 
-            </div>
+        </div>
+
         <div className="flex flex-col h-[60vh] justify-around">
         <div className="flex flex-col p-4 space-y-4">
             <label htmlFor="fromInput" className="block text-sm font-medium text-gray-700">

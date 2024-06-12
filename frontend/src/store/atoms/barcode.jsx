@@ -68,3 +68,7 @@ export const to = atom({
   key: 'to',
   default: ''
 });
+export const completeOrderNo = atom({
+  key: 'completeOrderNo',
+  default: ''
+});

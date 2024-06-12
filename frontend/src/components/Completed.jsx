@@ -1,18 +1,22 @@
 import axios from 'axios'
 import React, { useEffect, useState } from 'react'
 import { API_URL } from "../config.js";
+import { useRecoilState } from 'recoil';
+import { completeOrderNo } from '../store/atoms/barcode';
 
-function Skipped() {
+function Completed() {
     const [skippedOrderData, setSkippedOrderData] = useState(null);
     const [products, setProducts] = useState([]);
     const [completed, setCompleted] = useState(0);
     const [total, setTotal] = useState(0);
+    const [orderNo, setOrderNo] = useRecoilState(completeOrderNo);
 
     useEffect(() => {
         async function fetchSkippedOrderData() {   
             try {
-                const response = await axios.post(`${API_URL}/api/v1/order/getskipped` , { orderNo: 0 , prev : false , next : true});
-                setSkippedOrderData(response.data.skipped);
+                const response = await axios.post(`${API_URL}/api/v1/order/getskipped` , { orderNo: orderNo });
+                setSkippedOrderData(response.data);
+                console.log(response.data);
             } catch (error) {
                 console.error('Error fetching skipped order data:', error);
             }
@@ -42,42 +46,6 @@ function Skipped() {
         }
     }, [skippedOrderData]);
 
-    const handlePrev = async () => {
-        try {
-            const response = await axios.post(`${API_URL}/api/v1/order/getskipped`, { orderNo: skippedOrderData.orderNo , prev : true , next : false});
-            setSkippedOrderData(response.data.skipped);
-            console.log(response.data.skipped);
-        } catch (error) {
-            console.error('Error fetching previous skipped order data:', error);
-        }
-    }
-    const handleNext = async () => {
-        try {
-            const response = await axios.post(`${API_URL}/api/v1/order/getskipped`, { orderNo: skippedOrderData.orderNo , prev : false , next : true});
-            setSkippedOrderData(response.data.skipped);
-            console.log(response.data.skipped);
-        } catch (error) {
-            console.error('Error fetching previous skipped order data:', error);
-        }
-    }
-    const handleComplete = async () => {
-        try {
-            const response = await axios.post(`${API_URL}/api/v1/order/submit`, {
-                orderId: skippedOrderData.orderNo,
-                status: 'completed'
-            });
-            console.log(response);
-            if (response.data.status === 1) {
-                // setProducts([]);
-                // setCompleted(0);
-                // setTotal(0);
-                // setSkippedOrderData(null);
-                handleNext();   
-            }
-        } catch (error) {
-            console.error('Error completing skipped order:', error);
-        }
-    }
 
     return (
         <div>
@@ -94,17 +62,23 @@ function Skipped() {
                 {products.length > 0 ? products : <p>No skipped products found.</p>}
             </div>
             {
+                products.length > 0 ? 
+                <p className='m-5'>fulfilled on : {skippedOrderData.fulfilledOn}</p>
+                : null
+            }
+            
+            {/* {
                 products.length > 0 ?
                 <p className='m-5'>skip reason : {skippedOrderData.status}</p>
                 : null
-            }
-            <div className='flex justify-around'>
+            } */}
+            {/* <div className='flex justify-around'>
                 <button onClick={handlePrev}>Previous</button>
                 <button onClick={handleComplete}>Complete</button>
                 <button onClick={handleNext}>Next</button>
-            </div>
+            </div> */}
         </div>
     )
 }
 
-export default Skipped
+export default Completed
