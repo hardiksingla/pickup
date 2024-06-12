@@ -287,9 +287,8 @@ router.post("/updateOrders2", async (req, res) => {
             console.log(order.order_number);
             if (!prevOrdersList.includes(order.order_number)){
                 
-                const paymentStatus = Array.isArray(order.payment_gateway_names) && order.payment_gateway_names.length > 0
-                                    ? order.payment_gateway_names[0]
-                                    : 'Unknown Payment Status';
+                const prepaid = order.financial_status === "paid" || order.financial_status === "partially_refunded" || order.financial_status === "partially_paid" ? true : false
+                const paymentStatus = prepaid ? "Prepaid" : "COD";
                 let productArr = [];
                 for (const lineItem of order.line_items){
                     let productD = {
@@ -303,12 +302,15 @@ router.post("/updateOrders2", async (req, res) => {
                 }
 
                 let fulfilledOn = "null";
+                let lablePrinted = false;
                 if (order.fulfillment_status === "fulfilled") {
                     fulfilledOn = "shopify";
+                    lablePrinted = true;
                 }
                 if (order.cancelled_at !== null){
                     console.log(order.cancelled_at);
                     console.log("cancelled added to mongo");
+                    lablePrinted = true;
                     fulfilledOn = "cancelled";
                 }
 
@@ -317,11 +319,11 @@ router.post("/updateOrders2", async (req, res) => {
                     orderNo: order.order_number,
                     status: "pending",
                     paymentStatus: paymentStatus,
-                    prepaid: order.financial_status === "paid" || order.financial_status === "partially_refunded" || order.financial_status === "partially_paid" ? true : false,
+                    prepaid: prepaid,
                     productStatus : productArr,
                     fulfilledOn : fulfilledOn,
                     orderedAt : order.created_at,
-                    lablePrinted: false,
+                    lablePrinted: labelPrinted,
                 });
                 await newOrder.save();
             }
