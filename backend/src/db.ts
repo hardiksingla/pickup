@@ -129,6 +129,7 @@ export const Order = mongoose.model("Order", ordersSchema);
 export const ProductOrdered = mongoose.model("ProductOrdered" , ProductOrderedSchema);
 export const Product = mongoose.model("Product", productShema);
 
+Order.init().catch(err => console.error('Index creation error:', err));
 
 // export = {
 //   Order,

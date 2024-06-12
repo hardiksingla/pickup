@@ -98,17 +98,14 @@ router.post('/order',authMiddleware, async (req, res) => {
         console.log("Invalid order type");
          return res.status(400).json({ message: "Invalid order type" });
     }      
+    
     let products : any = [];
     const orderId = order.id;
-    // console.log("orderId",order);
-    // return res.status(400).json({ message: "Invalid order type" });
     
     const orderDetails = await axios.get(`https://${SHOPIFY_API_KEY}/admin/api/2024-04/orders/${orderId}.json`);
 
-    // console.log("order",order,"order");
     const lineItems = orderDetails.data.order.line_items;
 
-    // Fetch product details and prepare the products list
     for (const lineItem of lineItems) {
         const productId = lineItem.product_id;
         if (productId === null) {
@@ -119,10 +116,8 @@ router.post('/order',authMiddleware, async (req, res) => {
         const currernt_quantity = lineItem.current_quantity;
 
         const p = (order.productStatus).find((product) => {
-            // console.log("product",product , lineItem.product_id);
             return product.productId == lineItem.product_id
         });
-        // console.log("p",p);
 
         products.push({
             name: product.data.product.title,
@@ -325,7 +320,18 @@ router.post("/updateOrders2", async (req, res) => {
                     orderedAt : order.created_at,
                     lablePrinted: lablePrinted,
                 });
-                await newOrder.save();
+                try {
+                    await newOrder.save();
+                    console.log('Order saved successfully');
+                } catch (error) {
+                    if (error.code === 11000) {
+                        // Duplicate key error
+                        console.error('Duplicate order number:', order.order_number);
+                    } else {
+                        // Other errors
+                        console.error('Error saving order:', error);
+                    }
+                }
             }
             else{
                 const orderM = await Order.findOne({orderNo : order.order_number});
