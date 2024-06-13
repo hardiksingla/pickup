@@ -132,6 +132,13 @@ function SelectV2() {
             navigate('/completed')
         }
     }
+    const exportDataSkipped = async () => {
+        const respose = await axios.post(`${API_URL}/api/v1/sheets/updateSkipped`)
+        console.log(respose.data.status)
+        if(respose.data.status == 200){
+            setExportScreen(false)
+        }
+    }
 
     return (
         <div>
@@ -141,9 +148,9 @@ function SelectV2() {
         {exportScreen && 
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                Do You want To Export?
-                <button onClick={exportData} className="m-3">Yes</button>
-                <button onClick={() => setExportScreen(false)} className="m-3">No</button>
+                <button onClick={exportData} className="m-3">Export Labels</button>
+                <button onClick={exportDataSkipped} className="m-3">Export skipped</button>
+                <button onClick={() => setExportScreen(false)} className="m-3">Exit</button>
                 </div>
                 </div>
         }

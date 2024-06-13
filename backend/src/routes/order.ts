@@ -386,7 +386,9 @@ router.post('/submit', authMiddleware ,  async (req, res) => {
     order.skipReason = req.body.comment;
     order.productStatus = req.body.products;
     order.fulfilledOn = status === "skipped" ? "null" : "app";
-    
+    if (status === "skipped"){
+        order.skipExported = false;
+    }
     order.fulfilledBy = req.phoneNumber;
     order.fulfillmentTime = new Date();
     await order.save();

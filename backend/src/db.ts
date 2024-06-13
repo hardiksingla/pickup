@@ -83,6 +83,9 @@ const ordersSchema = new mongoose.Schema({
   lablePrinted : {
     type : Boolean
   },
+  skipExported : {
+    type : Boolean
+  },
   
 });
 

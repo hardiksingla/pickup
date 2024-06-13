@@ -34,6 +34,39 @@ router.post('/update', async (req, res) => {
 
 });
 
+router.post("/updateSkipped", async (req, res) => {
+    const orders = await Order.find({ status : "skipped" , skipExported : false });
+
+    let data = [];
+
+    orders.forEach((order) => {
+        let orderData = [];
+        orderData.push(order.orderNo);
+        let productString = ""
+        for (let i = 0; i < order.productStatus.length; i++) {
+            if (order.productStatus[i].quantity > order.productStatus[i].completionStatus) {
+                productString +=  order.productStatus[i].sku + ","
+            }
+        }
+        if (productString.length > 0) {
+            productString = productString.slice(0, -1);
+        }
+        orderData.push(productString);
+        orderData.push("");
+        orderData.push("");
+        orderData.push(order.skipReason);
+        console.log(orderData);
+        data.push(orderData);
+    });
+    console.log(data);
+    await appendToSheet("16GeK7HF6FatEAhsyUCKCZdxyROdpyCF6LbWbllLuMTk", "AppSkipped!A1", data);
+
+    await Order.updateMany({ status : "skipped" , skipExported : false }, { skipExported : true });
+
+    res.status(200).json({ status : 200 , message: "Data updated successfully" });
+
+    });
+
 
 export default router;
 
