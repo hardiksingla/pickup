@@ -256,7 +256,7 @@ router.post("/updateOrders", async (req, res) => {
 router.post("/updateOrders2", async (req, res) => {
     console.log("updateOrders2");    
     let moreOrders = true;
-    const startOrderNo = req.body.from? req.body.from : 8000;
+    const startOrderNo = req.body.from? req.body.from : 11000;
     const r =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders.json?name=${startOrderNo}&status=any`)
     let nextid = r.data.orders[0].id;
     
