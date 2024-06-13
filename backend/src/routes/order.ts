@@ -53,16 +53,14 @@ router.post('/order',authMiddleware, async (req, res) => {
         // unassigned orders
 
         let assignedOrders = await Order.findOne({status: req.phoneNumber});
-        // console.log("assignedOrders",assignedOrders);
         if (assignedOrders){    
             assignedOrders.status = "pending";
             await assignedOrders.save();
         }
 
         if (req.body.yesterday == 'true') {
-            const now = new Date(); 
-            const yesterday = new Date(now);
-            yesterday.setHours(0, 0, 0, 0); 
+            const now = new Date();
+            const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 0);
             console.log("yesterdayMidnight",yesterday.toISOString());
             query.orderedAt = { $lt : yesterday.toISOString() }
             
@@ -75,8 +73,7 @@ router.post('/order',authMiddleware, async (req, res) => {
         console.log("query",query);
         order = await Order.findOneAndUpdate(query, update, options);
         if (!order){
-            query.status = "pending";    
-            console.log("query2",query);
+            query.status = "pending";
             order = await Order.findOneAndUpdate(query, update, options);
         }
         if (!order){
@@ -84,7 +81,6 @@ router.post('/order',authMiddleware, async (req, res) => {
             return;
         }
         // console.log("order",order);
-        console.log(query);
     }
     else if (req.body.orderType === "Skipped") {    
         query.status = "skipped";
@@ -170,6 +166,11 @@ router.post('/order',authMiddleware, async (req, res) => {
 //     res.status(200).json({status : "success"});
     
 // });
+
+
+
+
+
 
 router.post("/updateOrders", async (req, res) => {
     console.log("updateOrders");
