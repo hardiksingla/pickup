@@ -60,7 +60,7 @@ router.post('/order',authMiddleware, async (req, res) => {
 
         if (req.body.yesterday == 'true') {
             const now = new Date();
-            const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 0);
+            const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 18, 29, 0);
             console.log("yesterdayMidnight",yesterday.toISOString());
             query.orderedAt = { $lt : yesterday.toISOString() }
             
