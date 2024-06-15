@@ -25,8 +25,12 @@ const Buttons = () => {
 
     const dataFetch = async () => {
         const orderType = localStorage.getItem("selectedOption");
-        // const fromL = localStorage.getItem("from");
-        const fromL = orderDetailsData.orderId + 1;
+        let fromL = localStorage.getItem("from");
+        const orderTypeL = localStorage.getItem("selectedOption");
+        if (orderTypeL === "skipped"){
+            fromL = orderDetailsData.orderId + 1
+
+        }
         const toL = localStorage.getItem("to");
         console.log('dataFetch');
         const token = localStorage.getItem("token");

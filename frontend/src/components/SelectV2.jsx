@@ -57,15 +57,15 @@ function SelectV2() {
         // Check and set default for 'from' if not provided or invalid
         if (isNaN(fromVal)) {
             fromVal = 0;
-            setFrom('0'); // Update the 'from' state with the default value
-            localStorage.setItem('from', '0'); // Store the 'from' value in local storage
+            setFrom(0); // Update the 'from' state with the default value
+            localStorage.setItem('from', 0); // Store the 'from' value in local storage
         }
 
         // Check and set default for 'to' if not provided or invalid
         if (isNaN(toVal) || toVal === 0) {
             toVal = 99999999;
-            setTo('99999999'); // Update the 'to' state with the default value
-            localStorage.setItem('to', '99999999'); // Store the 'to' value in local storage
+            setTo(99999999); // Update the 'to' state with the default value
+            localStorage.setItem('to', 99999999); // Store the 'to' value in local storage
         }
         if (toVal >= fromVal) {
             navigate('/home');
