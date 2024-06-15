@@ -41,6 +41,7 @@ router.post("/updateSkipped", async (req, res) => {
 
     orders.forEach((order) => {
         let orderData = [];
+        orderData.push(new Date().toString());
         orderData.push(order.orderNo);
         let productString = ""
         for (let i = 0; i < order.productStatus.length; i++) {
