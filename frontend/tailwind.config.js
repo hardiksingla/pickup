@@ -10,6 +10,7 @@ export default {
       "bgyellow" : "#fae743",
       "black" : "#000000",
       "white2" : "#ffffff",
+      "bgDefault" : "#242424",
     },
     extend: {},
   },

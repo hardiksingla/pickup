@@ -3,6 +3,7 @@ import { bagId, itemNo,orderDetails,prepaidReq, from,to , scanningProduct , bagI
 import axios from 'axios';
 import { API_URL } from "../config";
 import { useEffect, useState } from "react";
+import Loader from "react-js-loader";
 
 const Buttons = () => {
     const totalItems = useRecoilValue(itemNo).total;
@@ -10,14 +11,12 @@ const Buttons = () => {
     const [orderDetailsData, setOrderDetailsData] = useRecoilState(orderDetails);
     const orderId = orderDetailsData.orderId;
     const [bagIdValue , setBagValue] = useRecoilState(bagId);
-    const isprepaid = useRecoilValue(prepaidReq);
-    const fromValue = useRecoilValue(from);
-    const toValue = useRecoilValue(to);
     const [scanningProducts, setScanningProduct] = useRecoilState(scanningProduct);
     const [isOpen, setIsOpen] = useState(false);
     const [isSkipOpen, setIsSkipOpen] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState('');
     const [bagIdReqValue , setBagIdReqValue] = useRecoilState(bagIdReq);
+    const [isLoading , setIsLoading] = useState(false);
 
     const reset = () => {
         setBagValue('');
@@ -32,12 +31,16 @@ const Buttons = () => {
         console.log('dataFetch');
         const token = localStorage.getItem("token");
         console.log(token);
+        
+        setIsLoading(true);
+
         const response = await axios.post(
             `${API_URL}/api/v1/order/order`,
             { orderType , from: fromL || 0, to: toL || 99999999 , yesterday : localStorage.getItem('yesterdayCheck')},
             { headers: { Authorization: `Bearer ${token}` } }
           );
-        console.log(response.data);                
+        console.log(response.data);
+        setIsLoading(false);        
         if(response.data.messageStatus == 0){
             console.log("sfefsf:,",response.data.messageStatus)
             setOrderDetailsData({orderId : "No Order",paymentStatus : "No Order",products : []})
@@ -131,13 +134,22 @@ const Buttons = () => {
     }
     return (
         <>
-        {/* <button onClick={handelDebug}>debug</button> */}
+        {
+            isLoading ?
+            <div className="fixed inset-0 flex items-center justify-center p-4 bg-bgDefault z-50">
+                <Loader type="spinner-cub" bgColor="white" size={100} />   
+            </div>: 
+            <div className="flex justify-around my-5">
+                <button onClick={skip}>Skip</button>
+                <button onClick={submit}>Submit</button>
+            </div> 
+        }
         {isSkipOpen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
                     <h2 className="text-2xl font-bold mb-4 text-white2">Choose an Option</h2>
                     <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-                    <label className="block mb- text-white2">
+                    <label className="block mb-2 text-white2">
                         <input
                         type="radio"
                         value="Item missing"
@@ -203,10 +215,6 @@ const Buttons = () => {
                 </button>
                 </div>
             )}
-        <div className="flex justify-around my-5">
-            <button onClick={skip}>Skip</button>
-            <button onClick={submit}>Submit</button>
-        </div>
         </>
     );
 };

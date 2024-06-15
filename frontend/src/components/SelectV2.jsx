@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { API_URL } from "../config.js";
 import { useEffect, useState } from "react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function SelectV2() {
     const [selectedOption, setSelectedOption] = useState('');
@@ -110,9 +112,17 @@ function SelectV2() {
     const search = async () => {
         const response = await axios.post(`${API_URL}/api/v1/order/search` , {orderNo : searchOrder});
         console.log(response.data)
+        
+        if(response.data.code == 0){
+            console.log('error')
+            toast.error('order not found')
+            return
+        }
         if (response.data.pending == true){
-            fromOnChange(searchOrder)
-            toOnChange(searchOrder)
+            // fromOnChange(searchOrder)
+            localStorage.setItem('from', searchOrder);
+            localStorage.setItem('to', searchOrder);
+            // toOnChange(searchOrder)
             if (response.data.skipped == false){
                 setSelectedOption('Both')
                 localStorage.setItem('selectedOption', 'Both');
@@ -157,7 +167,18 @@ function SelectV2() {
         {searchScreen && (
                 <div className="fixed inset-0 flex items-center justify-center p-4 bg-black z-50">
                 <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-                
+                <ToastContainer
+                    position="top-right"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                    theme="dark"
+                />
                     <div>
                     <p className="m-5">Serach Order</p>
                     <input type="text" value={searchOrder} onChange={(e) => setSearchOrder(e.target.value)} />

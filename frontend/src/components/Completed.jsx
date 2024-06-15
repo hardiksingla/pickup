@@ -10,7 +10,16 @@ function Completed() {
     const [completed, setCompleted] = useState(0);
     const [total, setTotal] = useState(0);
     const [orderNo, setOrderNo] = useRecoilState(completeOrderNo);
-
+    const [dataFetched, setDataFetched] = useState(false);
+    const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'numeric', 
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+      };
     useEffect(() => {
         async function fetchSkippedOrderData() {   
             try {
@@ -19,6 +28,8 @@ function Completed() {
                 console.log(response.data);
             } catch (error) {
                 console.error('Error fetching skipped order data:', error);
+            }finally{
+                setDataFetched(true);
             }
         }
         fetchSkippedOrderData();
@@ -61,22 +72,25 @@ function Completed() {
             <div className="h-96 overflow-auto">
                 {products.length > 0 ? products : <p>No skipped products found.</p>}
             </div>
-            {
-                products.length > 0 ? 
-                <p className='m-5'>fulfilled on : {skippedOrderData.fulfilledOn}</p>
-                : null
-            }
-            
             {/* {
-                products.length > 0 ?
-                <p className='m-5'>skip reason : {skippedOrderData.status}</p>
+                products.length > 0 ? 
+                <p className='m-5'>fulfilled on : {skippedOrderData.fulfilledOn}</p>    
+                {skippedOrderData.bagId ? <p className='m-5'>Bag ID : {skippedOrderData.bagId}</p> : null}
                 : null
             } */}
-            {/* <div className='flex justify-around'>
-                <button onClick={handlePrev}>Previous</button>
-                <button onClick={handleComplete}>Complete</button>
-                <button onClick={handleNext}>Next</button>
-            </div> */}
+            {dataFetched && skippedOrderData && skippedOrderData.fulfilledOn ? <p className='m-2'>fulfilled on : {skippedOrderData.fulfilledOn}</p> : null}
+            {dataFetched && skippedOrderData && skippedOrderData.bagId ? <p className='m-2'>bagId : {skippedOrderData.bagId}</p> : null}
+            {dataFetched && skippedOrderData && skippedOrderData.fulfilledBy ? <p className='m-2'>fulfilled By : {skippedOrderData.fulfilledBy}</p> : null}
+            {dataFetched && skippedOrderData && skippedOrderData.fulfillmentTime ? <p className='m-2'>fulfillment time : {new Date(skippedOrderData.fulfillmentTime).toLocaleString('en-US', options)}</p> : null}
+            {dataFetched && skippedOrderData ? (
+            skippedOrderData.labelPrinted !== undefined ? (
+                skippedOrderData.labelPrinted ? (
+                <p className='m-2'>Label Printed</p>
+                ) : (
+                <p className='m-2'>Label not printed</p>
+                )
+            ) : null
+            ) : null}
         </div>
     )
 }

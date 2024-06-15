@@ -293,7 +293,7 @@ router.post('/submit', authMiddleware ,  async (req, res) => {
 
 
 router.post('/getcompleted', async (req, res) => {
-    console.log("Request to /getskipped with body:", req.body);
+    console.log("Request to /getcompleted with body:", req.body);
     
     const order = await Order.findOne({ orderNo : req.body.orderNo });
     if (!order){
@@ -360,7 +360,7 @@ router.post("/search", async (req, res) => {
     }
     
     if(!order) {
-        return res.status(400).json({ message: "Invalid order number" });
+        return res.status(200).json({ message: "Invalid order number", code : 0 });
     }
     
     if (order.fulfilledOn === "null" && order.status === "pending") {
