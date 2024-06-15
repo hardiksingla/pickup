@@ -14,7 +14,7 @@ function Completed() {
     useEffect(() => {
         async function fetchSkippedOrderData() {   
             try {
-                const response = await axios.post(`${API_URL}/api/v1/order/getskipped` , { orderNo: orderNo });
+                const response = await axios.post(`${API_URL}/api/v1/order/getcompleted` , { orderNo: orderNo });
                 setSkippedOrderData(response.data);
                 console.log(response.data);
             } catch (error) {

@@ -7,7 +7,7 @@ dotenv.config();
 const router = Express.Router();
 
 router.post('/update', async (req, res) => {
-    const orders = await Order.find({ lablePrinted: false, status: { $in: ["completed", "manualComplete"] } });
+    const orders = await Order.find({ labelPrinted: false, status: { $in: ["completed", "manualComplete"] } });
     // console.log(orders);
     let data = [];
     let count = 1;
@@ -27,7 +27,7 @@ router.post('/update', async (req, res) => {
     data.push([str]);
     appendToSheet("16GeK7HF6FatEAhsyUCKCZdxyROdpyCF6LbWbllLuMTk", "AppLabels!A1", data);
 
-    await Order.updateMany({ lablePrinted: false, status: { $in: ["completed", "manualComplete"] } }, { lablePrinted: true })
+    await Order.updateMany({ labelPrinted: false, status: { $in: ["completed", "manualComplete"] } }, { labelPrinted: true })
 
     res.status(200).json({ status : 200 , message: "Data updated successfully" });
 
@@ -41,6 +41,7 @@ router.post("/updateSkipped", async (req, res) => {
 
     orders.forEach((order) => {
         let orderData = [];
+        orderData.push(new Date().toString());
         orderData.push(order.orderNo);
         let productString = ""
         for (let i = 0; i < order.productStatus.length; i++) {
@@ -61,7 +62,7 @@ router.post("/updateSkipped", async (req, res) => {
     console.log(data);
     await appendToSheet("16GeK7HF6FatEAhsyUCKCZdxyROdpyCF6LbWbllLuMTk", "AppSkipped!A1", data);
 
-    await Order.updateMany({ status : "skipped" , skipExported : false }, { skipExported : true });
+    await Order.updateMany({ status : "skipped" , skipExported : false }, { skipExported : true  , labelPrinted : true});
 
     res.status(200).json({ status : 200 , message: "Data updated successfully" });
 

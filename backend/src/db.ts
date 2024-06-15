@@ -9,7 +9,7 @@ const connectDB = async () => {
   try {
     await mongoose.connect(
       MONGODB_URI
-      // "mongodb+srv://hardiksingla007:k6GxsfWvs6QaojIs@cluster0.otp7pa7.mongodb.net/pickup?retryWrites=true&w=majority&appName=Cluster0"
+      // "mongodb+srv://hardiksingla007:k6GxsfWvs6QaojIs@cluster0.otp7pa7.mongodb.net/pickupV3?retryWrites=true&w=majority&appName=Cluster0"
       // "mongodb+srv://07hardiksingla:ptGG2BEXxTry4H2C@cluster0.dkqwq2p.mongodb.net/pickuptest?retryWrites=true&w=majority&appName=Cluster0"
       // "mongodb://localhost:27016/pickup"
     );
@@ -80,13 +80,21 @@ const ordersSchema = new mongoose.Schema({
     type : Date,
     // required : true
   },
-  lablePrinted : {
+  labelPrinted : {
     type : Boolean
   },
   skipExported : {
     type : Boolean
   },
+  assignedTo : {
+    type : String
+  }
   
+});
+const variableSchema = new mongoose.Schema({
+  startId : {
+    type : Number  
+  }
 });
 
 const productShema = new mongoose.Schema({
@@ -131,6 +139,7 @@ export const User = mongoose.model("User", UserSchema);
 export const Order = mongoose.model("Order", ordersSchema);
 export const ProductOrdered = mongoose.model("ProductOrdered" , ProductOrderedSchema);
 export const Product = mongoose.model("Product", productShema);
+export const Variable = mongoose.model("Variable", variableSchema);
 
 Order.init().catch(err => console.error('Index creation error:', err));
 

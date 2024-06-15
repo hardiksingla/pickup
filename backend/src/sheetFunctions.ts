@@ -1,6 +1,4 @@
 import { google } from 'googleapis';
-import { JWT } from 'google-auth-library';
-import fs from 'fs';
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -33,4 +31,3 @@ export const appendToSheet = async (spreadsheetId: string, range: string, values
 };
 
 
-// appendToSheet('16GeK7HF6FatEAhsyUCKCZdxyROdpyCF6LbWbllLuMTk', 'AppLabels!A1', [['Hello, world!', "hello world"],['Hello, world!']]);

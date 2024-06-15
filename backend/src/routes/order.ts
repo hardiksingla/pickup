@@ -1,10 +1,9 @@
 import Express from "express";
 import zod from "zod";
 import axios from "axios";
-import { User , Order, ProductOrdered, Product} from "../db";
+import { Order, Variable} from "../db";
 import dotenv from 'dotenv';
 import { authMiddleware } from "../middleware";
-import { skip } from "node:test";
 dotenv.config();
 
 declare module 'express-serve-static-core' {
@@ -15,7 +14,6 @@ declare module 'express-serve-static-core' {
 
 const SHOPIFY_API_KEY = process.env.SHOPIFY_API_KEY;
 
-
 const router = Express.Router();
 
 const productSubmitZod = zod.object({
@@ -25,12 +23,11 @@ const productSubmitZod = zod.object({
 
 
 router.post('/order',authMiddleware, async (req, res) => {
-    // console.log(req.body.from , req.body.to , req.phoneNumber , req.body.orderType);
     console.log(req.body);
 
     const update = {
         $set: {
-            status: req.phoneNumber
+            assignedTo: req.phoneNumber
         }
     };    
     const options = {
@@ -40,11 +37,12 @@ router.post('/order',authMiddleware, async (req, res) => {
     
     
     let query: any = {
-        status: req.phoneNumber,
+        status: "pending",
         orderNo: {
         $gte: req.body.from,
         $lte: req.body.to
-        }
+        },
+        assignedTo : "null"
     };
     let order : any = {};
     if (req.body.orderType === "Prepaid" || req.body.orderType === "Postpaid" || req.body.orderType === "Both") {
@@ -52,16 +50,16 @@ router.post('/order',authMiddleware, async (req, res) => {
         
         // unassigned orders
 
-        let assignedOrders = await Order.findOne({status: req.phoneNumber});
+        let assignedOrders = await Order.findOne({assignedTo: req.phoneNumber});
         if (assignedOrders){    
-            assignedOrders.status = "pending";
+            console.log("Unassigning order", assignedOrders.orderNo);
+            assignedOrders.assignedTo = "null";
             await assignedOrders.save();
         }
 
         if (req.body.yesterday == 'true') {
             const now = new Date();
             const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 0);
-            console.log("yesterdayMidnight",yesterday.toISOString());
             query.orderedAt = { $lt : yesterday.toISOString() }
             
         }
@@ -70,22 +68,15 @@ router.post('/order',authMiddleware, async (req, res) => {
         } else if (req.body.orderType === "Postpaid") {
             query.prepaid = false;
         }
-        console.log("query",query);
         order = await Order.findOneAndUpdate(query, update, options);
-        if (!order){
-            query.status = "pending";
-            order = await Order.findOneAndUpdate(query, update, options);
-        }
         if (!order){
             res.status(200).json({message : "No pending orders" , messageStatus: 0});
             return;
         }
-        // console.log("order",order);
     }
     else if (req.body.orderType === "Skipped") {    
         query.status = "skipped";
-        console.log("query",query);
-        order = await Order.findOne(query);
+        order = await Order.findOneAndUpdate(query , update, options);
         if (!order){
             res.status(200).json({message : "No skipped orders" , messageStatus: 0});
             return;
@@ -95,6 +86,8 @@ router.post('/order',authMiddleware, async (req, res) => {
         console.log("Invalid order type");
          return res.status(400).json({ message: "Invalid order type" });
     }      
+
+    console.log("query",query);
     
     let products : any = [];
     const orderId = order.id;
@@ -108,9 +101,9 @@ router.post('/order',authMiddleware, async (req, res) => {
         if (productId === null) {
             continue;
         }
+        const currernt_quantity = lineItem.current_quantity;
 
         const product = await axios.get(`https://${SHOPIFY_API_KEY}/admin/api/2024-04/products/${productId}.json`);
-        const currernt_quantity = lineItem.current_quantity;
 
         const p = (order.productStatus).find((product) => {
             return product.productId == lineItem.product_id
@@ -122,7 +115,6 @@ router.post('/order',authMiddleware, async (req, res) => {
             sku: lineItem.sku,
             quantity: currernt_quantity,
             image: product.data.product.image !== null && product.data.product.image.src !== null ? product.data.product.image.src : "null",
-            location: product.data.product.variants[0].inventory_item_id,
             completionStatus: p.completionStatus
         });
 
@@ -133,131 +125,28 @@ router.post('/order',authMiddleware, async (req, res) => {
         paymentStatus: order.paymentStatus,
         skipReason: order.skipReason ? order.skipReason : null
     }
-    // console.log(order.skipReason);
     
-    // console.log("final data",data);
-
+    console.log("orderNo" , data.orderId);
     res.status(200).json(data);
-})
-
-
-// product db not required
-// router.get("/updateProducts", async (req, res) => {
-//     const response =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/2024-01/products.json`)
-//     const prevProducts = await Product.find({});
-//     const prevProductsList = [];
-//     for (const product of prevProducts){ 
-//         prevProductsList.push(product.id);
-//     }
-//     console.log(prevProductsList);
-//     for (const product of response.data.products){
-//         console.log(product.id);
-//         if (!prevProductsList.includes(product.id.toString())){
-//             const newProduct = new Product({
-//                 id: product.id,
-//                 name: product.title,
-//                 sku: product.variants[0].sku,
-//                 location: product.variants[0].inventory_item_id,
-//                 image: product.image !== null && product.image.src !== null ? product.image.src : "null"
-//             });
-//             await newProduct.save();
-//         }
-//     }
-//     res.status(200).json({status : "success"});
-    
-// });
-
-
-
-
-
-
-router.post("/updateOrders", async (req, res) => {
-    console.log("updateOrders");
-
-
-    // let deleteArr = [];
-    // deleteArr.push("pending")
-    // const users = await User.find({})
-    // for (const user of users){
-    //     deleteArr.push(user.phoneNumber);
-    // }
-    // console.log(deleteArr)
-    // try {
-    //     const result = await Order.deleteMany({ "status": { $in: deleteArr }});
-    //     console.log(result.deletedCount + ' pending orders were deleted.');
-    // } catch (error) {
-    //     console.error('Error deleting pending orders:', error);
-    // }
-
-    
-    let moreOrders = true;
-    const startOrderNo = req.body.from? req.body.from : 8000;
-    const r =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders.json?name=${startOrderNo}&status=any`)
-    let nextid = r.data.orders[0].id;
-    
-    
-    while (moreOrders){
-        const prevOrders = await Order.find({});
-        let response : any;
-        // console.log(`https://${SHOPIFY_API_KEY}/admin/orders.json?limit=250&since_id=${highestOrdernumberid}`);
-        response =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders.json?limit=250&since_id=${nextid}`)
-        if (response.data.orders.length === 0){
-            moreOrders = false;
-        }else{
-            nextid = response.data.orders[response.data.orders.length-1].id;            
-            console.log(response.data.orders[response.data.orders.length-1].id);
-            console.log(nextid);
-        }
-        
-        const prevOrdersList = [];
-        for (const order of prevOrders){ 
-            prevOrdersList.push(order.orderNo);
-        }
-        console.log(prevOrdersList);
-        for (const order of response.data.orders){
-            console.log(order.order_number);
-            if (!prevOrdersList.includes(order.order_number)){
-                const paymentStatus = Array.isArray(order.payment_gateway_names) && order.payment_gateway_names.length > 0
-                                    ? order.payment_gateway_names[0]
-                                    : 'Unknown Payment Status';
-                if (order.fulfillment_status != "fulfilled"){
-                    let productArr = [];
-                    for (const lineItem of order.line_items){
-                        let productD = {
-                            orderId: order.order_number,
-                            productId: lineItem.product_id,
-                            quantity: lineItem.quantity,
-                            completionStatus : 0
-                        }
-                        // const productOrdered = new ProductOrdered(productD);
-                        // await productOrdered.save();
-                        productArr.push(productD);
-                    }
-                    const newOrder = new Order({
-                        id : order.id,
-                        orderNo: order.order_number,
-                        status: "pending",
-                        paymentStatus: paymentStatus,
-                        prepaid: order.financial_status === "paid" ? true : false,
-                        productStatus : productArr,
-                        createdAt : new Date()
-
-                    });
-                    await newOrder.save();
-                    
-                }
-            }
-        }
-    }
-    res.status(200).json({status : "success"});
 })
 
 
 router.post("/updateOrders2", async (req, res) => {
     console.log("updateOrders2");    
     let moreOrders = true;
-    const startOrderNo = req.body.from? req.body.from : 11000;
+    let startOrderNo : any
+    if (req.body.from === null || req.body.from === undefined){
+        startOrderNo = await Variable.findOne({ id: 1 });
+        startOrderNo = startOrderNo.startId;
+    }else{
+        startOrderNo = req.body.from;
+        let variable = await Variable.findOne({ id: 1 });
+        variable.startId = startOrderNo;
+        variable.save();
+    }
+    
+    console.log(startOrderNo);
+
     const r =  await axios.get(`https://${SHOPIFY_API_KEY}/admin/orders.json?name=${startOrderNo}&status=any`)
     let nextid = r.data.orders[0].id;
     
@@ -267,7 +156,6 @@ router.post("/updateOrders2", async (req, res) => {
     for (const order of prevOrders){ 
         prevOrdersList.push(order.orderNo);
     }
-    console.log(prevOrdersList);
     
     while (moreOrders){
         let response : any;
@@ -276,6 +164,10 @@ router.post("/updateOrders2", async (req, res) => {
             moreOrders = false;
         }else{
             nextid = response.data.orders[response.data.orders.length-1].id;            
+            nextid = response.data.orders[response.data.orders.length-1].id;            
+            console.log(response.data.orders[response.data.orders.length-1].id);
+            console.log(nextid);
+            nextid = response.data.orders[response.data.orders.length-1].id;
             console.log(response.data.orders[response.data.orders.length-1].id);
             console.log(nextid);
         }
@@ -299,15 +191,15 @@ router.post("/updateOrders2", async (req, res) => {
                 }
 
                 let fulfilledOn = "null";
-                let lablePrinted = false;
+                let labelPrinted = false;
                 if (order.fulfillment_status === "fulfilled") {
                     fulfilledOn = "shopify";
-                    lablePrinted = true;
+                    labelPrinted = true;
                 }
                 if (order.cancelled_at !== null){
                     console.log(order.cancelled_at);
                     console.log("cancelled added to mongo");
-                    lablePrinted = true;
+                    labelPrinted = true;
                     fulfilledOn = "cancelled";
                 }
 
@@ -320,7 +212,8 @@ router.post("/updateOrders2", async (req, res) => {
                     productStatus : productArr,
                     fulfilledOn : fulfilledOn,
                     orderedAt : order.created_at,
-                    lablePrinted: lablePrinted,
+                    labelPrinted: labelPrinted,
+                    assignedTo : "null"
                 });
                 try {
                     await newOrder.save();
@@ -343,23 +236,24 @@ router.post("/updateOrders2", async (req, res) => {
                     console.log(order.cancelled_at);
                     console.log("cancelled in mongo");
                     orderM.fulfilledOn = "cancelled";
-                    await orderM.save();
+                    try {
+                        await orderM.save();
+                    }
+                    catch (error){
+                        console.log("Error saving order", error);
+                    }
                 }
 
                 else if(orderM.fulfilledOn === "null" && order.fulfillment_status === "fulfilled"){
                     orderM.fulfilledOn = "shopify";
-                    await orderM.save();
-                }
-                // else if (orderM.status !== "skipped" && orderM.status !== "completed" && order.fullfilmentStatus === "fullfilled"){
-                //     orderM.fulfilledOn = "shopify";
-                //     await orderM.save();
-                // }
-                // else if (orderM.fulfilledOn === "null" && order.fullfilmentStatus !== "fullfilled"){
-                //     orderM.fulfilledOn = "null";
-                //     await orderM.save();
-                // }
-                
-            
+                    orderM.labelPrinted = true;
+                    try {
+                        await orderM.save();
+                    }
+                    catch (error){
+                        console.log("Error saving order", error);
+                    }
+                }           
             }
         }
     }
@@ -369,7 +263,6 @@ router.post("/updateOrders2", async (req, res) => {
 
 router.post('/submit', authMiddleware ,  async (req, res) => {
     const validationResult : any = productSubmitZod.safeParse(req.body);
-    // console.log("vlaidation error " ,validationResult.error);
     if (!validationResult.success){
         console.log("Invalid request submit ")
         res.status(400).json({ message: "Invalid request submit" });
@@ -381,7 +274,7 @@ router.post('/submit', authMiddleware ,  async (req, res) => {
         res.status(400).json({ message: "Invalid order" });
         return
     }
-    order.status = status ;
+    order.status = status;
     order.bagId = req.body.bagId;
     order.skipReason = req.body.comment;
     order.productStatus = req.body.products;
@@ -391,18 +284,19 @@ router.post('/submit', authMiddleware ,  async (req, res) => {
     }
     order.fulfilledBy = req.phoneNumber;
     order.fulfillmentTime = new Date();
+    order.assignedTo = "null";
     await order.save();
 
     res.status(200).json({ message: "Order updated" , status:1});
 });
 
 
-router.post('/getskipped', async (req, res) => {
+router.post('/getcompleted', async (req, res) => {
     console.log("Request to /getskipped with body:", req.body);
     
     const order = await Order.findOne({ orderNo : req.body.orderNo });
     if (!order){
-        return res.status(400).json({ message: "Invalid order number" });
+        return res.status(400).json({ message: "Invalid value" });
     }
     else if (order.fulfilledOn == "shopify"){
         let products : any = [];
@@ -443,9 +337,6 @@ router.post('/getskipped', async (req, res) => {
             fulfilledOn: order.fulfilledOn, 
             skipReason: order.skipReason ? order.skipReason : null
         }
-        // console.log(order.skipReason);
-        
-        // console.log("final data",data);
     
         res.status(200).json(data);
     }
@@ -460,21 +351,26 @@ router.post('/getskipped', async (req, res) => {
 router.post("/search", async (req, res) => {
     console.log("Request to /search with body:", req.body);
     const orderNo = req.body.orderNo;
-    const order = await Order.findOne({ orderNo: orderNo });
+    let order : any;
+    if (orderNo.length === 9) {
+        order = await Order.findOne({ bagId: orderNo });
+    }else {
+        order = await Order.findOne({ orderNo: orderNo });
+    }
     
     if(!order) {
         return res.status(400).json({ message: "Invalid order number" });
     }
     
     if (order.fulfilledOn === "null" && order.status === "pending") {
-        return res.status(200).json({pending : true , skipped : false});
+        return res.status(200).json({pending : true , skipped : false , orderNo : order.orderNo});
 
     }
     else if (order.fulfilledOn === "null" && order.status === "skipped") {
-        return res.status(200).json({pending : true , skipped : true});
+        return res.status(200).json({pending : true , skipped : true , orderNo : order.orderNo});
     }
     else{
-        return res.status(200).json({pending : false});
+        return res.status(200).json({pending : false , orderNo : order.orderNo});
     }
 })
 

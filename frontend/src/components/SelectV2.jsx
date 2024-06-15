@@ -128,7 +128,7 @@ function SelectV2() {
             navigate('/home')
         }
         else{
-            setSearchComplete(searchOrder)
+            setSearchComplete(response.data.orderNo)
             navigate('/completed')
         }
     }
