@@ -53,7 +53,8 @@ function SelectV2() {
         // Parse the values to ensure they are treated as numbers
         let fromVal = parseInt(fromValue, 10);
         let toVal = parseInt(toValue, 10);
-
+        localStorage.setItem('from', fromVal);
+        localStorage.setItem('to', toVal);
         // Check and set default for 'from' if not provided or invalid
         if (isNaN(fromVal)) {
             fromVal = 0;
