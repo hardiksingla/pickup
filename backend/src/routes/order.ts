@@ -103,7 +103,9 @@ router.post('/order',authMiddleware, async (req, res) => {
             continue;
         }
         const currernt_quantity = lineItem.current_quantity;
-
+        if (currernt_quantity === 0) {
+            continue;
+        }
         const product = await axios.get(`https://${SHOPIFY_API_KEY}/admin/api/2024-04/products/${productId}.json`);
 
         const p = (order.productStatus).find((product) => {
